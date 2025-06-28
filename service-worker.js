@@ -1,11 +1,11 @@
-const CACHE_NAME = 'heroframe-cache-v5'; // Increased cache version due to layout changes
+const CACHE_NAME = 'heroframe-cache-v7'; // Increased cache version to force update
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/management.html',
-    '/manifest.json',
-    '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png',
+    '/HeroFrame-CharSheet-0.1/', // Base path for your PWA on GitHub Pages
+    '/HeroFrame-CharSheet-0.1/index.html',
+    '/HeroFrame-CharSheet-0.1/management.html',
+    '/HeroFrame-CharSheet-0.1/manifest.json',
+    '/HeroFrame-CharSheet-0.1/icons/icon-192x192.png',
+    '/HeroFrame-CharSheet-0.1/icons/icon-512x512.png',
     'https://cdn.tailwindcss.com', // Tailwind CSS CDN
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap', // Google Fonts CSS
     'https://fonts.gstatic.com/s/inter/v13/UcC73FwrK3iLTeHuS_fvQtMwCp5Pz-FCx_3m-F0Q.woff2', // Example font file
