@@ -498,14 +498,16 @@
                         might: 'Мощь', finesse: 'Сноровка', mind: 'Разум',
                         spirit: 'Дух', presence: 'Влияние'
                     }[key];
-                    const growthId = `charGrowth-${key}`;
+                    // Using unique IDs for the growth value display spans
+                    const diceId = `charDice-${key}`;
+                    const growthValueId = `charGrowthValue-${key}`;
 
                     const div = document.createElement('div');
                     div.className = 'flex items-center mb-3';
                     div.innerHTML = `
-                        <label for="${growthId}" class="characteristic-label capitalize">${labelText}:</label>
-                        <span class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 mr-2 w-20 text-center text-base" aria-labelledby="${growthId}-dice-label">${char.dice}</span>
-                        <span id="${growthId}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 mr-2 w-20 text-center text-base" aria-label="Текущий рост характеристики ${labelText}">${char.growth}</span>
+                        <span class="characteristic-label capitalize" aria-label="Характеристика ${labelText}">${labelText}:</span>
+                        <span id="${diceId}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 mr-2 w-20 text-center text-base" aria-labelledby="${diceId}">${char.dice}</span>
+                        <span id="${growthValueId}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 mr-2 w-20 text-center text-base" aria-label="Текущий рост характеристики ${labelText}">${char.growth}</span>
                         <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1 px-3 rounded-full mr-1 transition duration-200 adjust-growth" data-char="${key}" data-amount="-1" ${char.growth === 0 ? 'disabled' : ''} aria-label="Уменьшить рост характеристики ${labelText}">-</button>
                         <button class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-1 px-3 rounded-full transition duration-200 adjust-growth" data-char="${key}" data-amount="1" aria-label="Увеличить рост характеристики ${labelText}">+</button>
                     `;
@@ -951,6 +953,7 @@
                 // Update characterData based on element's attributes
                 if (section === 'stats' && subfield) {
                     // Ensure the nested object exists before setting property
+                    // This check was added in the previous iteration and is crucial.
                     if (characterData.stats[field]) {
                         characterData.stats[field][subfield] = value;
                     } else {
@@ -1191,6 +1194,11 @@
             document.getElementById('notes').addEventListener('input', handleInputChange);
             document.getElementById('heroismCurrent').addEventListener('input', handleInputChange);
             document.getElementById('heroismBonus').addEventListener('input', handleInputChange);
+
+            // Explicitly attach listeners for "Add" buttons
+            document.getElementById('add-module-button').addEventListener('click', addModule);
+            document.getElementById('add-trait-button').addEventListener('click', addTrait);
+            document.getElementById('add-equipment-button').addEventListener('click', addEquipment);
 
 
             // Confirm/Cancel deletion buttons
