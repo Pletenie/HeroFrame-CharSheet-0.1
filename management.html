@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление Персонажами HeroFrame</title>
+    <link rel="manifest" href="/manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Custom modal for confirmation (same as index.html) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #404040; /* neutral-700 */
+            margin: auto;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid #525252; /* neutral-600 */
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 24px;
+        }
+        .modal-buttons button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .modal-buttons .confirm-btn {
+            background-color: #B91C1C; /* red-700 */
+            color: white;
+        }
+        .modal-buttons .confirm-btn:hover {
+            background-color: #991B1B; /* red-800 */
+            transform: scale(1.05);
+        }
+        .modal-buttons .cancel-btn {
+            background-color: #78716C; /* stone-600 */
+            color: white;
+        }
+        .modal-buttons .cancel-btn:hover {
+            background-color: #57534E; /* stone-700 */
+            transform: scale(1.05);
+        }
+
+        /* Styles for character management features (re-used) */
+        .character-management-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .character-list {
+            max-height: 300px; /* Increased height for management page */
+            overflow-y: auto;
+            background-color: #404040; /* neutral-700 */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid #525252; /* neutral-600 */
+        }
+        .character-list-item {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #525252; /* neutral-600 */
+        }
+        .character-list-item:last-child {
+            border-bottom: none;
+        }
+        .character-list-item .character-name {
+            flex-grow: 1;
+            margin-bottom: 0.5rem; /* Space before buttons on wrap */
+            word-break: break-all; /* Break long file names */
+            padding-right: 0.5rem;
+        }
+        .character-list-item .buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+        .character-list-item button {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-neutral-900 to-neutral-800 text-neutral-100 p-4 sm:p-8">
+    <div id="app" class="max-w-4xl mx-auto bg-neutral-800 rounded-xl p-6 sm:p-8 shadow-2xl border border-neutral-700">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-6 text-yellow-400">Управление Персонажами HeroFrame</h1>
+        <div id="browser-warning" class="bg-red-800 text-white p-3 rounded-lg mb-4 hidden">
+            <strong>Внимание:</strong> Для сохранения и загрузки персонажей в папку на диске требуется браузер на движке Chromium (Chrome, Edge). В других браузерах эта функция может работать некорректно или быть недоступна.
+        </div>
+
+        <!-- Navigation back to Character Sheet -->
+        <div class="text-center mb-6 flex flex-col sm:flex-row justify-center gap-4">
+            <button id="go-to-sheet-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                Вернуться к листу персонажа
+            </button>
+            <button id="new-character-button" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                Новый персонаж
+            </button>
+        </div>
+
+        <!-- Section for JSON Import/Export & Share Code -->
+        <div class="mb-8 p-6 bg-neutral-700 rounded-lg shadow-inner border border-neutral-600 flex flex-col sm:flex-row justify-around items-center gap-4">
+            <h2 class="text-xl font-semibold text-green-400">Передача данных</h2>
+            <!-- JSON Import/Export -->
+            <div class="w-full sm:w-auto flex flex-col items-center gap-2 p-4 bg-neutral-800 rounded-lg border border-neutral-600">
+                <h3 class="text-lg font-semibold text-amber-300">Файлы JSON</h3>
+                <input type="file" id="import-json-input" accept=".json" class="hidden" />
+                <label for="import-json-input" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 cursor-pointer w-full text-center">
+                    Импортировать JSON
+                </label>
+                <button id="export-json-button" class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 w-full">
+                    Экспортировать текущий JSON
+                </button>
+            </div>
+
+            <!-- Share Code Section (only import/load here) -->
+            <div class="w-full sm:w-auto flex flex-col items-center gap-2 mt-4 sm:mt-0 p-4 bg-neutral-800 rounded-lg border border-neutral-600">
+                <h3 class="text-lg font-semibold text-teal-400">Вставить Код Доступа (Base64)</h3>
+                <label for="import-share-code-input" class="text-sm font-medium text-neutral-300 mb-1 block w-full text-left">Вставьте код персонажа сюда:</label>
+                <textarea id="import-share-code-input" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-24 resize-none focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="Вставьте код персонажа сюда..."></textarea>
+                <button id="load-from-share-code-button" class="mt-2 bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 w-full">
+                    Загрузить по Коду
+                </button>
+            </div>
+        </div>
+
+        <!-- Character Management Section (Local Disk Storage) -->
+        <div class="mb-8 p-6 bg-neutral-700 rounded-lg shadow-inner border border-neutral-600">
+            <h2 class="text-2xl font-semibold mb-4 text-lime-400">Персонажи на диске</h2>
+            <div class="character-management-section">
+                <button id="select-folder-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                    Выбрать папку для персонажей
+                </button>
+                <div id="selected-folder-display" class="text-sm text-neutral-400 text-center"></div>
+                <button id="save-active-character-to-folder-button" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105" disabled>
+                    Сохранить активного персонажа в папку
+                </button>
+                <h3 class="text-xl font-semibold text-neutral-300 mt-4 mb-2">Список Персонажей в папке:</h3>
+                <div id="character-list" class="character-list">
+                    <!-- Character list will be populated here -->
+                    <p class="text-neutral-500 text-center py-4" id="no-folder-selected-message">Выберите папку для отображения списка.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal Structure (re-used) -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <p class="text-lg text-neutral-200 mb-4" id="modal-text">Вы уверены, что хотите удалить этот файл?</p>
+            <div class="modal-buttons">
+                <button class="confirm-btn" id="confirmDeleteBtn">Удалить</button>
+                <button class="cancel-btn" id="cancelDeleteBtn">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // Helper function to verify File System Access API permissions
+        // Defined globally to be accessible by event listeners and other functions
+        async function verifyPermission(handle, readWrite) {
+            const options = {};
+            if (readWrite) {
+                options.mode = 'readwrite';
+            }
+            // Query permission
+            if ((await handle.queryPermission(options)) === 'granted') {
+                return true;
+            }
+            // Request permission if not granted
+            if ((await handle.requestPermission(options)) === 'granted') {
+                return true;
+            }
+            return false;
+        }
+
+        // Global constants for localStorage keys - defined outside DOMContentLoaded
+        const FOLDER_HANDLE_NAME_KEY = 'heroframe_character_folder_handle_name'; // Stores name of the folder for persistence hint
+        const ACTIVE_CHARACTER_LOCAL_STORAGE_KEY = 'heroframe_active_character_data'; // Key for current active character
+        const ACTIVE_FILE_HANDLE_NAME_KEY = 'heroframe_active_file_handle_name'; // Stores name of the active file for persistence hint
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let characterFolderHandle = null; // Live FileSystemDirectoryHandle for character folder
+
+            // Check for File System Access API support and show warning if not supported
+            const browserWarning = document.getElementById('browser-warning');
+            if (!('showDirectoryPicker' in window)) {
+                browserWarning.classList.remove('hidden');
+            }
+
+            // --- File System Access API Functions ---
+            const saveActiveCharacterToFolderButton = document.getElementById('save-active-character-to-folder-button');
+            const selectFolderButton = document.getElementById('select-folder-button');
+            const selectedFolderDisplay = document.getElementById('selected-folder-display');
+            const characterListDiv = document.getElementById('character-list');
+            const noFolderSelectedMessage = document.getElementById('no-folder-selected-message');
+
+            async function restoreFolderHandle() {
+                try {
+                    const storedHandleName = localStorage.getItem(FOLDER_HANDLE_NAME_KEY);
+                    if (storedHandleName && 'showDirectoryPicker' in window) {
+                        selectedFolderDisplay.textContent = `Последняя выбранная папка: ${storedHandleName || 'Нет данных'}. Возможно, потребуется выбрать заново.`;
+                        saveActiveCharacterToFolderButton.disabled = true; // Disable until a handle is confirmed by user
+                        characterListDiv.innerHTML = '<p class="text-neutral-500 text-center py-4">Выберите папку для отображения списка.</p>';
+
+                        // Attempt to re-acquire the handle using the stored name and ID hint
+                        const potentialFolderHandle = await window.showDirectoryPicker({ id: 'heroframe-character-folder', mode: 'readwrite' }).catch(() => null);
+
+                        if (potentialFolderHandle && potentialFolderHandle.name === storedHandleName) {
+                            if (await verifyPermission(potentialFolderHandle, true)) {
+                                characterFolderHandle = potentialFolderHandle;
+                                selectedFolderDisplay.textContent = `Выбрана папка: ${characterFolderHandle.name}`;
+                                saveActiveCharacterToFolderButton.disabled = false;
+                                await listCharactersInFolder();
+                            } else {
+                                console.warn("Permission lost for the stored folder handle.");
+                                localStorage.removeItem(FOLDER_HANDLE_NAME_KEY);
+                                selectedFolderDisplay.textContent = 'Папка не выбрана или доступ отозван.';
+                                saveActiveCharacterToFolderButton.disabled = true;
+                            }
+                        } else {
+                             // Either user cancelled during restore, or folder name mismatch
+                            localStorage.removeItem(FOLDER_HANDLE_NAME_KEY);
+                            selectedFolderDisplay.textContent = 'Папка не выбрана или доступ отозван.';
+                            saveActiveCharacterToFolderButton.disabled = true;
+                            characterListDiv.innerHTML = '<p class="text-neutral-500 text-center py-4">Выберите папку для отображения списка.</p>';
+                        }
+
+                    } else {
+                        selectedFolderDisplay.textContent = 'Папка не выбрана.';
+                        saveActiveCharacterToFolderButton.disabled = true;
+                        characterListDiv.innerHTML = '<p class="text-neutral-500 text-center py-4">Выберите папку для отображения списка.</p>';
+                    }
+                } catch (error) {
+                    console.error("Error during initial folder handle restoration:", error);
+                    selectedFolderDisplay.textContent = 'Ошибка доступа к папке.';
+                    saveActiveCharacterToFolderButton.disabled = true;
+                    characterListDiv.innerHTML = '<p class="text-neutral-500 text-center py-4">Выберите папку для отображения списка.</p>';
+                }
+            }
+
+
+            selectFolderButton.addEventListener('click', async () => {
+                if (!('showDirectoryPicker' in window)) {
+                    alert('Ваш браузер не поддерживает File System Access API. Функции сохранения/загрузки в папку недоступны.');
+                    return;
+                }
+                try {
+                    characterFolderHandle = await window.showDirectoryPicker({
+                        id: 'heroframe-character-folder', // Consistent ID
+                        mode: 'readwrite',
+                    });
+                    if (characterFolderHandle) {
+                        localStorage.setItem(FOLDER_HANDLE_NAME_KEY, characterFolderHandle.name); // Store name for display
+                        selectedFolderDisplay.textContent = `Выбрана папка: ${characterFolderHandle.name}`;
+                        saveActiveCharacterToFolderButton.disabled = false;
+                        await listCharactersInFolder();
+                    } else {
+                        alert('Выбор папки отменен.');
+                        selectedFolderDisplay.textContent = 'Папка не выбрана.';
+                        saveActiveCharacterToFolderButton.disabled = true;
+                        characterListDiv.innerHTML = '<p class="text-neutral-500 text-center py-4">Выберите папку для отображения списка.</p>';
+                    }
+                } catch (error) {
+                    console.error("Error selecting folder:", error);
+                    alert(`Ошибка при выборе папки: ${error.message}`);
+                    selectedFolderDisplay.textContent = 'Ошибка выбора папки.';
+                    saveActiveCharacterToFolderButton.disabled = true;
+                    characterListDiv.innerHTML = '<p class="text-neutral-500 text-center py-4">Выберите папку для отображения списка.</p>';
+                }
+            });
+
+            saveActiveCharacterToFolderButton.addEventListener('click', async () => {
+                if (!characterFolderHandle) {
+                    alert('Сначала выберите папку для сохранения персонажей!');
+                    return;
+                }
+
+                const activeCharacter = JSON.parse(localStorage.getItem(ACTIVE_CHARACTER_LOCAL_STORAGE_KEY) || '{}');
+                if (Object.keys(activeCharacter).length === 0 || !activeCharacter.name) {
+                    alert('Нет активного персонажа для сохранения. Создайте или загрузите персонажа на листе.');
+                    return;
+                }
+
+                if (!await verifyPermission(characterFolderHandle, true)) {
+                    alert('Нет разрешения на запись в выбранную папку. Пожалуйста, выберите папку заново и предоставьте разрешение.');
+                    return;
+                }
+
+                try {
+                    const fileName = `${activeCharacter.name || 'Unnamed_Character'}_${Date.now()}.json`;
+                    const fileHandle = await characterFolderHandle.getFileHandle(fileName, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(JSON.stringify(activeCharacter, null, 2));
+                    await writable.close();
+                    alert(`Активный персонаж "${activeCharacter.name || 'Без имени'}" сохранен в папку!`);
+                    await listCharactersInFolder(); // Refresh the list
+                } catch (error) {
+                    console.error("Error saving character to folder:", error);
+                    alert(`Ошибка при сохранении персонажа: ${error.message}`);
+                }
+            });
+
+            async function listCharactersInFolder() {
+                characterListDiv.innerHTML = ''; // Clear previous list
+                if (!characterFolderHandle) {
+                    noFolderSelectedMessage.style.display = 'block';
+                    return;
+                }
+                noFolderSelectedMessage.style.display = 'none';
+
+                let foundCharacters = false;
+                try {
+                    // Re-verify read permission before attempting to list contents
+                    if (!await verifyPermission(characterFolderHandle, false)) {
+                        console.warn("Lost read permission for character folder handle. Re-prompting on next interaction.");
+                        characterFolderHandle = null; // Invalidate the handle
+                        localStorage.removeItem(FOLDER_HANDLE_NAME_KEY);
+                        selectedFolderDisplay.textContent = 'Папка не выбрана или доступ отозван.';
+                        saveActiveCharacterToFolderButton.disabled = true;
+                        characterListDiv.innerHTML = '<p class="text-red-400 text-center py-4">Доступ к папке потерян. Попробуйте выбрать ее заново.</p>';
+                        return;
+                    }
+
+                    for await (const entry of characterFolderHandle.values()) {
+                        if (entry.kind === 'file' && entry.name.endsWith('.json')) {
+                            foundCharacters = true;
+                            const listItem = document.createElement('div');
+                            listItem.className = 'character-list-item';
+                            listItem.innerHTML = `
+                                <span class="character-name text-neutral-200">${entry.name}</span>
+                                <div class="buttons">
+                                    <button class="bg-green-500 hover:bg-green-600 text-white load-character-from-folder" data-filename="${entry.name}">Загрузить</button>
+                                    <button class="bg-red-700 hover:bg-red-800 text-white delete-character-from-folder" data-filename="${entry.name}">Удалить</button>
+                                </div>
+                            `;
+                            characterListDiv.appendChild(listItem);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error listing files in folder:", error);
+                    characterListDiv.innerHTML = '<p class="text-red-400 text-center py-4">Не удалось получить доступ к содержимому папки. Попробуйте выбрать ее заново.</p>';
+                    // If access error, assume handle is invalid
+                    characterFolderHandle = null;
+                    localStorage.removeItem(FOLDER_HANDLE_NAME_KEY);
+                    selectedFolderDisplay.textContent = 'Папка не выбрана или доступ отозван.';
+                    saveActiveCharacterToFolderButton.disabled = true;
+                    return;
+                }
+
+                if (!foundCharacters) {
+                    characterListDiv.innerHTML = '<p class="text-neutral-500 text-center py-4">В выбранной папке нет файлов персонажей (JSON).</p>';
+                }
+
+                // Attach listeners to new buttons
+                characterListDiv.querySelectorAll('.load-character-from-folder').forEach(button => {
+                    button.addEventListener('click', loadCharacterFromFolder);
+                });
+                characterListDiv.querySelectorAll('.delete-character-from-folder').forEach(button => {
+                    button.addEventListener('click', deleteCharacterFromFolder);
+                });
+            }
+
+            async function loadCharacterFromFolder(event) {
+                const fileName = event.target.dataset.filename;
+                if (!characterFolderHandle) { // Check if handle is null before trying permission
+                    alert('Сначала выберите папку для персонажей.');
+                    return;
+                }
+                if (!await verifyPermission(characterFolderHandle, false)) {
+                    alert('Нет разрешения на чтение из выбранной папки. Пожалуйста, выберите папку заново.');
+                    return;
+                }
+                try {
+                    const fileHandle = await characterFolderHandle.getFileHandle(fileName);
+                    const file = await fileHandle.getFile();
+                    const contents = await file.text();
+                    const loadedCharacterData = JSON.parse(contents);
+
+                    localStorage.setItem(ACTIVE_CHARACTER_LOCAL_STORAGE_KEY, JSON.stringify(loadedCharacterData));
+                    localStorage.setItem(ACTIVE_FILE_HANDLE_NAME_KEY, fileHandle.name); // Store active file name for auto-save
+
+                    alert(`Персонаж "${loadedCharacterData.name || fileName}" загружен в активный лист!`);
+                    window.location.href = 'index.html'; // Go back to character sheet
+                } catch (error) {
+                    console.error("Error loading character from folder:", error);
+                    alert(`Ошибка при загрузке персонажа "${fileName}": ${error.message}`);
+                }
+            }
+
+            async function deleteCharacterFromFolder(event) {
+                const fileName = event.target.dataset.filename;
+                if (!characterFolderHandle) { // Check if handle is null before trying permission
+                    alert('Сначала выберите папку для персонажей.');
+                    return;
+                }
+                // Verify write permission explicitly before showing modal
+                if (!await verifyPermission(characterFolderHandle, true)) {
+                    alert('Нет разрешения на изменение выбранной папки. Пожалуйста, выберите папку заново и предоставьте разрешение.');
+                    return;
+                }
+
+                showConfirmationModal(fileName); // Show confirmation modal for deletion
+            }
+
+            let deleteFileName = null; // Store filename for deletion confirmation
+            const confirmationModal = document.getElementById('confirmationModal');
+            const modalText = document.getElementById('modal-text');
+
+            function showConfirmationModal(fileName) {
+                deleteFileName = fileName;
+                modalText.textContent = `Вы уверены, что хотите удалить файл "${fileName}" из папки? Это действие необратимо.`;
+                confirmationModal.style.display = 'flex';
+            }
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+                if (deleteFileName) {
+                    try {
+                        await characterFolderHandle.removeEntry(deleteFileName);
+                        alert(`Файл "${deleteFileName}" удален.`);
+                        await listCharactersInFolder();
+                        deleteFileName = null;
+                        // If the deleted file was the active one, clear its handle from localStorage
+                        if (localStorage.getItem(ACTIVE_FILE_HANDLE_NAME_KEY) === deleteFileName) {
+                            localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                        }
+                    } catch (error) {
+                        console.error("Error deleting file:", error);
+                        alert(`Ошибка при удалении файла "${deleteFileName}": ${error.message}`);
+                    }
+                }
+                confirmationModal.style.display = 'none';
+            });
+
+            document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                deleteFileName = null;
+                confirmationModal.style.display = 'none';
+            });
+
+
+            // --- JSON Export/Import functionality ---
+            document.getElementById('export-json-button').addEventListener('click', () => {
+                const activeCharacter = JSON.parse(localStorage.getItem(ACTIVE_CHARACTER_LOCAL_STORAGE_KEY) || '{}');
+                if (Object.keys(activeCharacter).length === 0 || !activeCharacter.name) {
+                    alert('Нет активного персонажа для экспорта. Создайте или загрузите персонажа на листе.');
+                    return;
+                }
+                const dataStr = JSON.stringify(activeCharacter, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `${activeCharacter.name || 'новый_персонаж'}_${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            });
+
+            document.getElementById('import-json-input').addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const importedData = JSON.parse(e.target.result);
+                            localStorage.setItem(ACTIVE_CHARACTER_LOCAL_STORAGE_KEY, JSON.stringify(importedData));
+                            localStorage.removeItem(ACTIVE_FILE_HANDLE_KEY); // Clear active file handle on import via JSON
+                            alert(`JSON файл "${file.name}" импортирован в активный лист!`);
+                            window.location.href = 'index.html'; // Go back to character sheet with new data
+                        } catch (error) {
+                            console.error("Error parsing JSON file:", error);
+                            alert("Ошибка при импорте файла JSON. Убедитесь, что это корректный файл листа персонажа.");
+                        } finally {
+                             event.target.value = '';
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            });
+
+            // --- Share Code Import/Load Functionality (remains here) ---
+            const importShareCodeInput = document.getElementById('import-share-code-input');
+            const loadFromShareCodeButton = document.getElementById('load-from-share-code-button');
+
+            loadFromShareCodeButton.addEventListener('click', () => {
+                const base64Code = importShareCodeInput.value.trim();
+                if (!base64Code) {
+                    alert('Пожалуйста, введите код персонажа.');
+                    return;
+                }
+                try {
+                    const decodedStr = atob(base64Code); // Decode from Base64
+                    const importedData = JSON.parse(decodedStr);
+                    localStorage.setItem(ACTIVE_CHARACTER_LOCAL_STORAGE_KEY, JSON.stringify(importedData));
+                    localStorage.removeItem(ACTIVE_FILE_HANDLE_KEY); // Clear active file handle on import via code
+                    alert(`Персонаж "${importedData.name || 'Без имени'}" загружен в активный лист по коду!`);
+                    importShareCodeInput.value = ''; // Clear input after successful import
+                    window.location.href = 'index.html'; // Go back to character sheet with new data
+                } catch (error) {
+                    console.error("Error loading character from share code:", error);
+                    alert("Ошибка при загрузке персонажа по коду. Убедитесь, что код корректен.");
+                }
+            });
+
+            // Handle navigation back to character sheet
+            document.getElementById('go-to-sheet-button').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+
+            // Handle "New Character" button
+            document.getElementById('new-character-button').addEventListener('click', () => {
+                if (confirm('Вы уверены, что хотите создать нового персонажа? Все несохраненные изменения на текущем листе будут утеряны.')) {
+                    localStorage.removeItem(ACTIVE_CHARACTER_LOCAL_STORAGE_KEY); // Clear active character
+                    localStorage.removeItem(ACTIVE_FILE_HANDLE_KEY); // Clear any associated file
+                    window.location.href = 'index.html'; // Go to character sheet to load default
+                }
+            });
+
+            // Initial load and setup
+            restoreFolderHandle();
+        });
+    </script>
+</body>
+</html>

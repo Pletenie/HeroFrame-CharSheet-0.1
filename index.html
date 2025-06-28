@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лист Персонажа HeroFrame</title>
+    <link rel="manifest" href="/manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Custom modal for confirmation */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #404040; /* neutral-700 */
+            margin: auto;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid #525252; /* neutral-600 */
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 24px;
+        }
+        .modal-buttons button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .modal-buttons .confirm-btn {
+            background-color: #B91C1C; /* red-700 */
+            color: white;
+        }
+        .modal-buttons .confirm-btn:hover {
+            background-color: #991B1B; /* red-800 */
+            transform: scale(1.05);
+        }
+        .modal-buttons .cancel-btn {
+            background-color: #78716C; /* stone-600 */
+            color: white;
+        }
+        .modal-buttons .cancel-btn:hover {
+            background-color: #57534E; /* stone-700 */
+            transform: scale(1.05);
+        }
+
+        /* Style for tabs */
+        .tab-button {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            background-color: #525252; /* neutral-600 */
+            color: #D4D4D4; /* neutral-300 */
+            border-bottom: 2px solid transparent;
+        }
+        .tab-button.active {
+            background-color: #404040; /* neutral-700 */
+            color: #FACC15; /* yellow-400 */
+            border-bottom: 2px solid #FACC15;
+        }
+        .tab-button:hover:not(.active) {
+            background-color: #737373; /* neutral-500 */
+        }
+        .tab-content {
+            display: none;
+            padding: 1.5rem;
+            background-color: #404040; /* neutral-700 */
+            border-radius: 0 0.5rem 0.5rem 0.5rem;
+            border: 1px solid #525252; /* neutral-600 */
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-container {
+            border-radius: 0.75rem;
+            overflow: hidden; /* Ensures borders play nice */
+        }
+        .competence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(calc(50% - 0.5rem), 1fr)); /* Two columns for competencies */
+            gap: 1rem;
+        }
+        textarea#share-code-output {
+            min-height: 96px; /* Ensure a minimum height for the textarea */
+        }
+
+        /* Tooltip styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -100px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none; /* Allows click-through to element below */
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Adjusted grid for dynamic lists in tabs for button visibility */
+        #modules-section .grid,
+        #equipment-section .grid {
+            grid-template-columns: 1fr 1fr 100px; /* Name, Tag/Damage, Button */
+        }
+        #traits-section .grid {
+            grid-template-columns: 1fr 1fr 4rem 100px; /* Name, Tag, Heroism (4rem), Button */
+        }
+        
+        .col-span-full {
+            grid-column: 1 / -1;
+        }
+
+        /* Ensure responsive font sizes for characteristic labels */
+        .characteristic-label {
+            font-size: 1.125rem; /* Equivalent to text-lg */
+            font-weight: bold;
+            color: #84cc16; /* green-500 */
+            width: 8rem; /* Fixed width for alignment */
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .characteristic-label {
+                font-size: 1.25rem; /* Equivalent to text-xl */
+            }
+        }
+        @media (min-width: 1024px) { /* lg breakpoint */
+            .characteristic-label {
+                font-size: 1.375rem; /* Equivalent to text-2xl */
+            }
+        }
+
+        /* Adjust Heroism input width in the main 'Показатели' section */
+        input#heroismCurrent, input#heroismBonus {
+            width: 4rem; /* Halved from 80px (5rem) */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-neutral-900 to-neutral-800 text-neutral-100 p-4 sm:p-8">
+    <div id="app" class="max-w-screen-xl mx-auto bg-neutral-800 rounded-xl p-6 sm:p-8 shadow-2xl border border-neutral-700">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-6 text-yellow-400">Лист Персонажа HeroFrame</h1>
+
+        <!-- Top Controls: Navigation and Save -->
+        <div class="flex flex-col sm:flex-row justify-center sm:justify-between items-center mb-6 gap-4">
+            <button id="go-to-management-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                Мои Персонажи
+            </button>
+            <button id="save-character-top-button" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                Сохранить текущего персонажа в папку
+            </button>
+        </div>
+
+        <!-- Section for Share Code Generation -->
+        <div class="mb-8 p-6 bg-neutral-700 rounded-lg shadow-inner border border-neutral-600 flex flex-col items-center gap-2">
+            <h2 class="text-xl font-semibold text-teal-400">Передача персонажа по коду (Base64)</h2>
+            <button id="generate-share-code-button" class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 w-full sm:w-auto">
+                Сгенерировать Код Доступа
+            </button>
+            <textarea id="share-code-output" readonly class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-24 resize-none focus:outline-none focus:ring-2 focus:ring-teal-500 hidden" placeholder="Ваш код доступа появится здесь..."></textarea>
+            <button id="copy-share-code-button" class="bg-stone-500 hover:bg-stone-600 text-white font-bold py-1 px-3 rounded-md hidden">Копировать</button>
+        </div>
+
+        <!-- Main layout: Left (Char + Stats) vs Right (Tabs) -->
+        <div class="grid grid-cols-1 lg:grid-cols-[minmax(400px,_1fr)_2fr] gap-8 mb-8">
+            <!-- Left Column: Персонаж, Характеристики, Показатели -->
+            <div>
+                <!-- Секция Персонаж -->
+                <div class="mb-8 p-6 bg-neutral-700 rounded-lg shadow-inner border border-neutral-600">
+                    <h2 class="text-2xl font-semibold mb-4 text-green-400">Персонаж</h2>
+                    <div class="flex flex-col mb-4">
+                        <label for="name" class="text-sm font-medium text-neutral-300 mb-1">Имя:</label>
+                        <input id="name" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex flex-col">
+                            <label for="expCurrent" class="text-sm font-medium text-neutral-300 mb-1">Опыт: Текущий</label>
+                            <input id="expCurrent" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                        </div>
+                        <div class="flex flex-col">
+                            <label for="expUnspent" class="text-sm font-medium text-neutral-300 mb-1">Нераспределенный опыт</label>
+                            <input id="expUnspent" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Секция Характеристики -->
+                <div class="mb-8 p-6 bg-neutral-700 rounded-lg shadow-inner border border-neutral-600">
+                    <h2 class="text-2xl font-semibold mb-4 text-green-400">Характеристики</h2>
+                    <div id="characteristics-section">
+                        <!-- Characteristics will be rendered here by JS -->
+                    </div>
+                </div>
+
+                <!-- Секция Показатели -->
+                <div class="p-6 bg-neutral-700 rounded-lg shadow-inner border border-neutral-600">
+                    <h2 class="text-2xl font-semibold mb-4 text-green-400">Показатели</h2>
+                    <div id="stats-section">
+                        <!-- Stats will be rendered here by JS -->
+                    </div>
+                    <!-- Героизм -->
+                    <div class="flex flex-col mb-3 pt-4 border-t border-neutral-600 mt-4">
+                        <label class="text-sm font-medium text-neutral-300 mb-1">Героизм (ТЕК/МАКС):</label>
+                        <div class="flex items-center gap-2">
+                            <input id="heroismCurrent" type="number" step="1" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                            <span class="text-neutral-400">/</span>
+                            <input id="heroismMaxDisplay" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 cursor-not-allowed" readonly />
+                            <label for="heroismBonus" class="text-sm font-medium text-neutral-300 ml-4">Бонус к максимуму:</label>
+                            <input id="heroismBonus" type="number" step="1" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Competencies and Tabs -->
+            <div>
+                <!-- Секция Компетенции -->
+                <div class="mb-8 p-6 bg-neutral-700 rounded-lg shadow-inner border border-neutral-600">
+                    <h2 class="text-2xl font-semibold mb-4 text-green-400">Компетенции</h2>
+                    <div class="competence-grid" id="competencies-section">
+                        <!-- Competencies will be rendered here by JS -->
+                    </div>
+                </div>
+
+                <!-- Tabs Container -->
+                <div class="tab-container">
+                    <div class="flex border-b border-neutral-600 flex-wrap">
+                        <button class="tab-button active" data-tab="modules">Модули</button>
+                        <button class="tab-button" data-tab="traits">Черты</button>
+                        <button class="tab-button" data-tab="defense">Защита</button>
+                        <button class="tab-button" data-tab="equipment">Снаряжение</button>
+                        <button class="tab-button" data-tab="notes">Заметки</button>
+                    </div>
+
+                    <!-- Tab Content: Модули -->
+                    <div id="modules-tab" class="tab-content active">
+                        <h2 class="text-2xl font-semibold mb-4 text-green-400">Модули</h2>
+                        <div class="grid grid-cols-[1fr_1fr_100px] gap-2 text-sm font-semibold text-neutral-400 mb-2">
+                            <span>Название</span>
+                            <span>Тег</span>
+                            <span></span> <!-- For delete button -->
+                        </div>
+                        <div id="modules-section">
+                            <!-- Modules will be rendered here by JS -->
+                        </div>
+                        <button id="add-module-button" class="mt-4 bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                            Добавить модуль
+                        </button>
+                    </div>
+
+                    <!-- Tab Content: Черты -->
+                    <div id="traits-tab" class="tab-content">
+                        <h2 class="text-2xl font-semibold mb-4 text-green-400">Черты</h2>
+                        <div class="grid grid-cols-[1fr_1fr_4rem_100px] gap-2 text-sm font-semibold text-neutral-400 mb-2">
+                            <span>Название</span>
+                            <span>Тег</span>
+                            <span>Героизм</span>
+                            <span></span> <!-- Empty for delete button -->
+                        </div>
+                        <div id="traits-section">
+                            <!-- Traits will be rendered here by JS -->
+                        </div>
+                        <button id="add-trait-button" class="mt-4 bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                            Добавить черту
+                        </button>
+                    </div>
+
+                    <!-- Tab Content: Защита -->
+                    <div id="defense-tab" class="tab-content">
+                        <h2 class="text-2xl font-semibold mb-4 text-green-400">Защита</h2>
+                        <div class="grid grid-cols-4 gap-2 text-sm font-semibold text-neutral-400 mb-2">
+                            <span>Название</span>
+                            <span>Тип</span>
+                            <span>ПОГЛ</span>
+                            <span>ПРОЧ</span>
+                        </div>
+                        <div id="defense-section">
+                            <!-- Defense items will be rendered here by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Tab Content: Снаряжение -->
+                    <div id="equipment-tab" class="tab-content">
+                        <h2 class="text-2xl font-semibold mb-4 text-green-400">Снаряжение</h2>
+                        <div class="grid grid-cols-[1fr_1fr_100px] gap-2 text-sm font-semibold text-neutral-400 mb-2">
+                            <span>Название</span>
+                            <span>Урон</span>
+                            <span></span> <!-- Empty for delete button -->
+                        </div>
+                        <div id="equipment-section">
+                            <!-- Equipment will be rendered here by JS -->
+                        </div>
+                        <button id="add-equipment-button" class="mt-4 bg-lime-600 hover:bg-lime-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                            Добавить снаряжение
+                        </button>
+                    </div>
+
+                    <!-- Tab Content: Заметки (includes biography now) -->
+                    <div id="notes-tab" class="tab-content">
+                        <h2 class="text-2xl font-semibold mb-4 text-green-400">Биография и Заметки</h2>
+                        <textarea id="description" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-32 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-4" placeholder="Краткое описание / Биография"></textarea>
+                        <textarea id="notes" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-32 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Дополнительные заметки, связи, цели, шрамы и прочее."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal Structure (re-used from previous version) -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <p class="text-lg text-neutral-200 mb-4" id="modal-text">Вы уверены, что хотите удалить эту строку?</p>
+            <div class="modal-buttons">
+                <button class="confirm-btn" id="confirmDeleteBtn">Удалить</button>
+                <button class="cancel-btn" id="cancelDeleteBtn">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // Helper function to verify File System Access API permissions
+        async function verifyPermission(handle, readWrite) {
+            const options = {};
+            if (readWrite) {
+                options.mode = 'readwrite';
+            }
+            if ((await handle.queryPermission(options)) === 'granted') {
+                return true;
+            }
+            if ((await handle.requestPermission(options)) === 'granted') {
+                return true;
+            }
+            return false;
+        }
+
+        // Global constants for localStorage keys
+        const ACTIVE_CHARACTER_LOCAL_STORAGE_KEY = 'heroframe_active_character_data';
+        const LAST_ACTIVE_TAB_KEY = 'heroframe_last_active_tab';
+        const FOLDER_HANDLE_NAME_KEY = 'heroframe_character_folder_handle_name';
+        const ACTIVE_FILE_HANDLE_NAME_KEY = 'heroframe_active_file_handle_name';
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let characterData = {
+                name: '', description: '', experience: { starting: 50, current: 50, unspent: 50 },
+                characteristics: { might: { dice: 'd4', growth: 0 }, finesse: { dice: 'd4', growth: 0 }, mind: { dice: 'd4', growth: 0 }, spirit: { dice: 'd4', growth: 0 }, presence: { dice: 'd4', growth: 0 } },
+                competencies: Array(4).fill(''),
+                modules: [
+                    { type: 'Раса', name: '' }, { type: 'Исток', name: '' }, { type: 'Культура', name: '' },
+                    { type: 'Магия', name: '' }, { type: 'Псионика', name: '' }
+                ],
+                defense: [
+                    { name: '', type: 'Броня', pgl: '', proch: '' }, { name: '', type: 'Покров', pgl: '', proch: '' },
+                    { name: '', type: 'Броня', pgl: '', proch: '' }, { name: '', type: 'Броня', pgl: '', proch: '' },
+                ],
+                stats: {
+                    hp: { current: '', max: '', bonus: 0, note: '20 + 5*Рост Мощи + 3*Рост Духа' },
+                    evasion: { value: '', bonus: 0, note: '10 + Рост Сноровки' },
+                    speed: { value: '', bonus: 0, note: '25 + 5*Рост Мощи/Сноровки (максимальное)' },
+                    attention: { value: '', bonus: 0, note: '10 + Рост Разума' },
+                    balance: { current: '', max: '', absorb: '', bonus: 0, note: '1 + Рост Разума + Рост Духа' },
+                },
+                heroism: { current: 10, baseMax: 10, bonusMax: 0 },
+                traits: [
+                    { name: '', tag: '', heroism: '', description: '' }, { name: '', tag: '', heroism: '', description: '' },
+                    { name: '', tag: '', heroism: '', description: '' }, { name: '', tag: '', heroism: '', description: '' },
+                ],
+                equipment: [
+                    { name: '', damage: '', description: '' }, { name: '', damage: '', description: '' },
+                    { name: '', damage: '', description: '' }, { name: '', damage: '', description: '' },
+                ],
+                notes: '',
+            };
+
+            let characterFolderHandle = null;
+            let currentFileHandleForAutoSave = null;
+
+            // Helper function to determine dice type
+            function getDiceFromGrowth(growth) {
+                if (growth === 0) return 'd4';
+                if (growth === 1) return 'd6';
+                if (growth === 2) return 'd8';
+                if (growth === 3) return 'd10';
+                if (growth >= 4 && growth <= 7) return 'd12';
+                if (growth >= 8) return 'd20';
+                return 'd4';
+            }
+
+            // Function to calculate derived character stats
+            function calculateStats() {
+                const mightGrowth = characterData.characteristics.might.growth;
+                const spiritGrowth = characterData.characteristics.spirit.growth;
+                const finesseGrowth = characterData.characteristics.finesse.growth;
+                const mindGrowth = characterData.characteristics.mind.growth;
+                const presenceGrowth = characterData.characteristics.presence.growth;
+
+                const hpMaxCalculated = 20 + (5 * mightGrowth) + (3 * spiritGrowth);
+                characterData.stats.hp.max = hpMaxCalculated + (characterData.stats.hp.bonus || 0);
+                if (characterData.stats.hp.current === '' || parseFloat(characterData.stats.hp.current) > characterData.stats.hp.max) {
+                    characterData.stats.hp.current = characterData.stats.hp.max;
+                }
+
+                characterData.stats.evasion.value = 10 + finesseGrowth + (characterData.stats.evasion.bonus || 0);
+                characterData.stats.speed.value = 25 + (5 * Math.max(mightGrowth, finesseGrowth)) + (characterData.stats.speed.bonus || 0);
+                characterData.stats.attention.value = 10 + mindGrowth + (characterData.stats.attention.bonus || 0);
+
+                const balanceMaxCalculated = 1 + mindGrowth + spiritGrowth;
+                characterData.stats.balance.max = balanceMaxCalculated + (characterData.stats.balance.bonus || 0);
+                if (characterData.stats.balance.current === '' || parseFloat(characterData.stats.balance.current) > characterData.stats.balance.max) {
+                    characterData.stats.balance.current = characterData.stats.balance.max;
+                }
+                characterData.stats.balance.absorb = getDiceFromGrowth(presenceGrowth);
+
+                characterData.heroism.max = characterData.heroism.baseMax + (characterData.heroism.bonusMax || 0);
+            }
+
+            // --- Rendering Functions to update the HTML dynamically ---
+            // These functions build/rebuild their respective DOM sections and attach listeners.
+            // They are called when structural changes occur or on initial load.
+
+            function renderCharacteristics() {
+                const charSection = document.getElementById('characteristics-section');
+                charSection.innerHTML = '';
+                for (const key in characterData.characteristics) {
+                    const char = characterData.characteristics[key];
+                    const labelText = {
+                        might: 'Мощь', finesse: 'Сноровка', mind: 'Разум',
+                        spirit: 'Дух', presence: 'Влияние'
+                    }[key];
+
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center mb-3';
+                    div.innerHTML = `
+                        <label class="characteristic-label capitalize">${labelText}:</label>
+                        <span class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 mr-2 w-20 text-center text-base">${char.dice}</span>
+                        <span class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 mr-2 w-20 text-center text-base">${char.growth}</span>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1 px-3 rounded-full mr-1 transition duration-200 adjust-growth" data-char="${key}" data-amount="-1" ${char.growth === 0 ? 'disabled' : ''}>-</button>
+                        <button class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-1 px-3 rounded-full transition duration-200 adjust-growth" data-char="${key}" data-amount="1">+</button>
+                    `;
+                    charSection.appendChild(div);
+                }
+                attachGrowthListeners(); // Re-attach listeners for growth buttons
+            }
+
+            function renderCompetencies() {
+                const compSection = document.getElementById('competencies-section');
+                compSection.innerHTML = '';
+                characterData.competencies.forEach((comp, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'flex flex-col';
+                    div.innerHTML = `
+                        <label class="text-sm font-medium text-neutral-300 mb-1">Компетенция ${index + 1}:</label>
+                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${comp}" data-section="competencies" data-index="${index}" />
+                    `;
+                    compSection.appendChild(div);
+                });
+                attachInputListeners(compSection); // Re-attach listeners for competency inputs
+            }
+
+            function renderModules() {
+                const modulesSection = document.getElementById('modules-section');
+                modulesSection.innerHTML = '';
+                characterData.modules.forEach((mod, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'grid grid-cols-[1fr_1fr_100px] gap-2 mb-2 items-start';
+                    div.innerHTML = `
+                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${mod.type}" data-section="modules" data-field="type" data-index="${index}" placeholder="Название модуля" />
+                        <div class="flex items-center gap-2">
+                            <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 flex-grow" value="${mod.name}" data-section="modules" data-field="name" data-index="${index}" placeholder="Тег модуля" />
+                            <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-3 rounded-lg shadow-md transition duration-200 delete-button" data-section="modules" data-index="${index}">Удалить</button>
+                        </div>
+                    `;
+                    modulesSection.appendChild(div);
+                });
+                attachInputListeners(modulesSection);
+                attachDeleteListeners(modulesSection);
+            }
+
+            function renderDefense() {
+                const defSection = document.getElementById('defense-section');
+                defSection.innerHTML = '';
+                characterData.defense.forEach((def, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'grid grid-cols-4 gap-2 mb-2';
+                    div.innerHTML = `
+                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${def.name}" data-section="defense" data-field="name" data-index="${index}" />
+                        <select class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="defense" data-field="type" data-index="${index}">
+                            <option value="Броня" ${def.type === 'Броня' ? 'selected' : ''}>Броня</option>
+                            <option value="Покров" ${def.type === 'Покров' ? 'selected' : ''}>Покров</option>
+                        </select>
+                        <input type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${def.pgl}" data-section="defense" data-field="pgl" data-index="${index}" />
+                        <input type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${def.proch}" data-section="defense" data-field="proch" data-index="${index}" />
+                    `;
+                    defSection.appendChild(div);
+                });
+                attachInputListeners(defSection);
+            }
+
+            function renderTraits() {
+                const traitsSection = document.getElementById('traits-section');
+                traitsSection.innerHTML = '';
+                characterData.traits.forEach((trait, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'grid grid-cols-[1fr_1fr_4rem_100px] gap-2 mb-2 items-start'; // 4rem for heroism input
+                    div.innerHTML = `
+                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${trait.name}" data-section="traits" data-field="name" data-index="${index}" placeholder="Название" />
+                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${trait.tag}" data-section="traits" data-field="tag" data-index="${index}" placeholder="Тег" />
+                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full" value="${trait.heroism}" data-section="traits" data-field="heroism" data-index="${index}" placeholder="Героизм" />
+                        <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 delete-button" data-section="traits" data-index="${index}">Удалить</button>
+                        <div class="col-span-full mt-1"> 
+                            <textarea class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-20 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="traits" data-field="description" data-index="${index}" placeholder="Описание">${trait.description}</textarea>
+                        </div>
+                    `;
+                    traitsSection.appendChild(div);
+                });
+                attachInputListeners(traitsSection);
+                attachDeleteListeners(traitsSection);
+            }
+
+            function renderEquipment() {
+                const eqSection = document.getElementById('equipment-section');
+                eqSection.innerHTML = '';
+                characterData.equipment.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'grid grid-cols-[1fr_1fr_100px] gap-2 mb-2 items-start';
+                    div.innerHTML = `
+                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${item.name}" data-section="equipment" data-field="name" data-index="${index}" placeholder="Название" />
+                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${item.damage}" data-section="equipment" data-field="damage" data-index="${index}" placeholder="Урон" />
+                        <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 delete-button" data-section="equipment" data-index="${index}">Удалить</button>
+                        <div class="col-span-full mt-1"> 
+                            <textarea class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-20 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="equipment" data-field="description" data-index="${index}" placeholder="Описание / Свойства">${item.description}</textarea>
+                        </div>
+                    `;
+                    eqSection.appendChild(div);
+                });
+                attachInputListeners(eqSection);
+                attachDeleteListeners(eqSection);
+            }
+
+            // Function to create the initial DOM structure for stats section
+            function createStatsDOM() {
+                const statsSection = document.getElementById('stats-section');
+                statsSection.innerHTML = ''; // Clear only once on initial creation
+
+                const statItems = [
+                    { key: 'hp', label: 'Здоровье (ХП)', icon: '<i class="fas fa-heart text-red-500"></i>', currentField: true, maxField: true, tooltip: characterData.stats.hp.note },
+                    { key: 'evasion', label: 'Уклонение (УКЛ)', icon: '<i class="fas fa-shield-alt text-blue-400"></i>', currentField: false, maxField: false, tooltip: characterData.stats.evasion.note },
+                    { key: 'speed', label: 'Скорость (СКР)', icon: '<i class="fas fa-shoe-prints text-orange-400"></i>', currentField: false, maxField: false, tooltip: characterData.stats.speed.note },
+                    { key: 'attention', label: 'Внимательность', icon: '<i class="fas fa-eye text-purple-400"></i>', currentField: false, maxField: false, tooltip: characterData.stats.attention.note },
+                    { key: 'balance', label: 'Баланс (БЛН)', icon: '<i class="fas fa-balance-scale text-yellow-400"></i>', currentField: true, maxField: true, absorbField: true, tooltip: characterData.stats.balance.note },
+                ];
+
+                statItems.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'flex flex-col mb-3 p-2 bg-neutral-800 rounded-md border border-neutral-600';
+                    div.innerHTML = `
+                        <label class="text-lg font-bold text-neutral-200 mb-2 flex items-center gap-2">${item.icon} ${item.label}:</label>
+                        <div class="flex flex-wrap items-center gap-2">
+                            ${item.currentField ? `
+                                <span class="text-neutral-400">Текущее:</span>
+                                <input type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="stats" data-field="${item.key}" data-subfield="current" id="${item.key}Current" />
+                            ` : ''}
+
+                            <span class="text-neutral-400">${item.key === 'hp' || item.key === 'balance' ? 'Макс:' : 'Значение:'}</span>
+                            <div class="tooltip-container">
+                                <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 cursor-not-allowed" readonly id="${item.key}MaxOrValueDisplay" />
+                                <span class="tooltip-text">${item.tooltip}</span>
+                            </div>
+                        </div>
+                        ${item.currentField ? ` <!-- For HP and Balance, bonus/absorb on a new line -->
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="text-neutral-400">Бонус:</span>
+                                <input type="number" step="${item.key === 'speed' ? 5 : 1}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="stats" data-field="${item.key}" data-subfield="bonus" id="${item.key}Bonus" />
+                                ${item.absorbField ? `
+                                    <span class="text-neutral-400 ml-4">ПОГЛ:</span>
+                                    <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 cursor-not-allowed" readonly id="${item.key}AbsorbDisplay" />
+                                ` : ''}
+                            </div>
+                        ` : ` <!-- For other stats (Evasion, Speed, Attention), bonus on same line if space allows -->
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="text-neutral-400">Бонус:</span>
+                                <input type="number" step="${item.key === 'speed' ? 5 : 1}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="stats" data-field="${item.key}" data-subfield="bonus" id="${item.key}Bonus" />
+                            </div>
+                        `}
+                    `;
+                    statsSection.appendChild(div);
+                });
+                attachInputListeners(statsSection); // Attach listeners only once when DOM is created
+            }
+
+            // Function to update *only* the values of existing stat DOM elements
+            function updateStatsDisplayValues() {
+                const hp = characterData.stats.hp;
+                const evasion = characterData.stats.evasion;
+                const speed = characterData.stats.speed;
+                const attention = characterData.stats.attention;
+                const balance = characterData.stats.balance;
+                const heroism = characterData.heroism;
+
+                // Update Heroism Display
+                const heroismCurrentEl = document.getElementById('heroismCurrent');
+                const heroismMaxDisplayEl = document.getElementById('heroismMaxDisplay');
+                const heroismBonusEl = document.getElementById('heroismBonus');
+                if (heroismCurrentEl) heroismCurrentEl.value = heroism.current;
+                if (heroismMaxDisplayEl) heroismMaxDisplayEl.value = heroism.max;
+                if (heroismBonusEl) heroismBonusEl.value = heroism.bonusMax;
+
+                // Update HP
+                const hpCurrentEl = document.getElementById('hpCurrent');
+                const hpMaxDisplayEl = document.getElementById('hpMaxOrValueDisplay');
+                const hpBonusEl = document.getElementById('hpBonus');
+                if (hpCurrentEl) hpCurrentEl.value = hp.current;
+                if (hpMaxDisplayEl) hpMaxDisplayEl.value = hp.max;
+                if (hpBonusEl) hpBonusEl.value = hp.bonus;
+
+                // Update Evasion
+                const evasionMaxDisplayEl = document.getElementById('evasionMaxOrValueDisplay');
+                const evasionBonusEl = document.getElementById('evasionBonus');
+                if (evasionMaxDisplayEl) evasionMaxDisplayEl.value = evasion.value;
+                if (evasionBonusEl) evasionBonusEl.value = evasion.bonus;
+
+                // Update Speed
+                const speedMaxDisplayEl = document.getElementById('speedMaxOrValueDisplay');
+                const speedBonusEl = document.getElementById('speedBonus');
+                if (speedMaxDisplayEl) speedMaxDisplayEl.value = speed.value;
+                if (speedBonusEl) speedBonusEl.value = speed.bonus;
+
+                // Update Attention
+                const attentionMaxDisplayEl = document.getElementById('attentionMaxOrValueDisplay');
+                const attentionBonusEl = document.getElementById('attentionBonus');
+                if (attentionMaxDisplayEl) attentionMaxDisplayEl.value = attention.value;
+                if (attentionBonusEl) attentionBonusEl.value = attention.bonus;
+
+                // Update Balance
+                const balanceCurrentEl = document.getElementById('balanceCurrent');
+                const balanceMaxDisplayEl = document.getElementById('balanceMaxOrValueDisplay');
+                const balanceAbsorbDisplayEl = document.getElementById('balanceAbsorbDisplay');
+                const balanceBonusEl = document.getElementById('balanceBonus');
+                if (balanceCurrentEl) balanceCurrentEl.value = balance.current;
+                if (balanceMaxDisplayEl) balanceMaxDisplayEl.value = balance.max;
+                if (balanceAbsorbDisplayEl) balanceAbsorbDisplayEl.value = balance.absorb;
+                if (balanceBonusEl) balanceBonusEl.value = balance.bonus;
+            }
+
+
+            // Function to update all editable UI elements from the characterData object
+            // This is now only for full UI refresh (e.g., on initial load or reset)
+            function updateUI() {
+                // Static inputs: Set values from data. Browser's input event listener handles typing.
+                document.getElementById('name').value = characterData.name;
+                document.getElementById('description').value = characterData.description;
+                document.getElementById('expCurrent').value = characterData.experience.current;
+                document.getElementById('expUnspent').value = characterData.experience.unspent;
+                document.getElementById('notes').value = characterData.notes;
+
+                // Re-render sections that might have structural changes
+                renderCharacteristics();
+                renderCompetencies();
+                renderModules();
+                renderDefense();
+                renderTraits();
+                renderEquipment();
+
+                // Update values for stats, but don't re-render the DOM for the section
+                updateStatsDisplayValues();
+            }
+
+            // Save character data to localStorage for auto-save
+            function autoSaveCharacter() {
+                localStorage.setItem(ACTIVE_CHARACTER_LOCAL_STORAGE_KEY, JSON.stringify(characterData));
+                saveCharacterToFileIfOpen();
+            }
+
+            // Function to save to file if one is currently open
+            async function saveCharacterToFileIfOpen() {
+                if (characterFolderHandle && currentFileHandleForAutoSave) {
+                    if (await verifyPermission(currentFileHandleForAutoSave, true)) {
+                        try {
+                            const writable = await currentFileHandleForAutoSave.createWritable();
+                            await writable.write(JSON.stringify(characterData, null, 2));
+                            await writable.close();
+                            console.log("Character auto-saved to file:", currentFileHandleForAutoSave.name);
+                        } catch (error) {
+                            console.warn("Error auto-saving to file:", error);
+                            currentFileHandleForAutoSave = null;
+                            localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                        }
+                    } else {
+                        console.warn("Permission lost for active file handle, cannot auto-save to file.");
+                        currentFileHandleForAutoSave = null;
+                        localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                    }
+                }
+            }
+
+            // Load character data from localStorage
+            async function loadActiveCharacter() {
+                const savedData = localStorage.getItem(ACTIVE_CHARACTER_LOCAL_STORAGE_KEY);
+                if (savedData) {
+                    try {
+                        const loaded = JSON.parse(savedData);
+                        characterData = deepMergeCharacterData(getDefaultCharacterData(), loaded);
+                        console.log("Active character loaded from localStorage.");
+                    } catch (e) {
+                        console.error("Error parsing localStorage data, loading default character.", e);
+                        characterData = JSON.parse(JSON.stringify(getDefaultCharacterData()));
+                    }
+                } else {
+                    console.log("No active character found in localStorage, loading default.");
+                    characterData = JSON.parse(JSON.stringify(getDefaultCharacterData()));
+                }
+
+                const storedFileHandleName = localStorage.getItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                const storedFolderHandleName = localStorage.getItem(FOLDER_HANDLE_NAME_KEY);
+
+                if (storedFileHandleName && storedFolderHandleName && 'showDirectoryPicker' in window) {
+                    try {
+                        const folderHandle = await window.showDirectoryPicker({ id: 'heroframe-character-folder', mode: 'readwrite' }).catch(() => null);
+                        if (folderHandle && folderHandle.name === storedFolderHandleName) {
+                            if (await verifyPermission(folderHandle, true)) {
+                                characterFolderHandle = folderHandle;
+                                try {
+                                    const fileHandle = await characterFolderHandle.getFileHandle(storedFileHandleName, { create: false});
+                                    if (await verifyPermission(fileHandle, true)) {
+                                        currentFileHandleForAutoSave = fileHandle;
+                                        console.log("Restored active file handle for:", storedFileHandleName);
+                                    } else {
+                                        console.warn("Permission lost for active file handle, cannot auto-save to file.");
+                                        currentFileHandleForAutoSave = null;
+                                        localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                                    }
+                                } catch (e) {
+                                    console.warn("Failed to find or re-acquire active file handle (might have been moved/deleted):", e);
+                                    currentFileHandleForAutoSave = null;
+                                    localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                                }
+                            } else {
+                                console.warn("Permission lost for folder handle, user needs to re-select.");
+                                characterFolderHandle = null;
+                                currentFileHandleForAutoSave = null;
+                                localStorage.removeItem(FOLDER_HANDLE_NAME_KEY);
+                                localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error during folder/file handle restoration process:", e);
+                        characterFolderHandle = null;
+                        currentFileHandleForAutoSave = null;
+                        localStorage.removeItem(FOLDER_HANDLE_NAME_KEY);
+                        localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                    }
+                }
+
+                // Create DOM for stats only once, then update values
+                createStatsDOM(); // Call once to build the DOM structure
+                calculateStats();
+                updateUI(); // Initial full UI update including all dynamic sections and stat values
+            }
+
+            function getDefaultCharacterData() {
+                return {
+                    name: '', description: '', experience: { starting: 50, current: 50, unspent: 50 },
+                    characteristics: { might: { dice: 'd4', growth: 0 }, finesse: { dice: 'd4', growth: 0 }, mind: { dice: 'd4', growth: 0 }, spirit: { dice: 'd4', growth: 0 }, presence: { dice: 'd4', growth: 0 } },
+                    competencies: Array(4).fill(''),
+                    modules: [
+                        { type: 'Раса', name: '' }, { type: 'Исток', name: '' }, { type: 'Культура', name: '' },
+                        { type: 'Магия', name: '' }, { type: 'Псионика', name: '' }
+                    ],
+                    defense: Array(4).fill(null).map((_, i) => ({ name: '', type: i % 2 === 0 ? 'Броня' : 'Покров', pgl: '', proch: '' })),
+                    stats: {
+                        hp: { current: 20, max: 20, bonus: 0, note: '20 + 5*Рост Мощи + 3*Рост Духа' },
+                        evasion: { value: 10, bonus: 0, note: '10 + Рост Сноровки' },
+                        speed: { value: 25, bonus: 0, note: '25 + 5*Рост Мощи/Сноровки (максимальное)' },
+                        attention: { value: 10, bonus: 0, note: '10 + Рост Разума' },
+                        balance: { current: 1, max: 1, absorb: 'd4', bonus: 0, note: '1 + Рост Разума + Рост Духа' },
+                    },
+                    heroism: { current: 10, baseMax: 10, bonusMax: 0 },
+                    traits: Array(4).fill(null).map(() => ({ name: '', tag: '', heroism: '', description: '' })),
+                    equipment: Array(4).fill(null).map(() => ({ name: '', damage: '', description: '' })),
+                    notes: '',
+                };
+            }
+
+            function deepMergeCharacterData(defaultData, loadedData) {
+                const merged = { ...defaultData, ...loadedData };
+
+                for (const key in defaultData) {
+                    if (defaultData.hasOwnProperty(key)) {
+                        if (typeof defaultData[key] === 'object' && defaultData[key] !== null && !Array.isArray(defaultData[key])) {
+                            merged[key] = deepMergeCharacterData(defaultData[key], loadedData[key] || {});
+                        } else if (Array.isArray(defaultData[key])) {
+                            if (Array.isArray(loadedData[key])) {
+                                if (key === 'modules' || key === 'traits' || key === 'equipment') {
+                                    merged[key] = loadedData[key].map(item => {
+                                        return { ...item };
+                                    });
+                                    if (loadedData[key].length < defaultData[key].length) {
+                                        for(let i = loadedData[key].length; i < defaultData[key].length; i++) {
+                                            merged[key].push(JSON.parse(JSON.stringify(defaultData[key][i])));
+                                        }
+                                    }
+                                } else if (key === 'defense' || key === 'competencies') {
+                                    merged[key] = loadedData[key].slice(0, defaultData[key].length).map((item, idx) => {
+                                        if (typeof defaultData[key][idx] === 'object' && defaultData[key][idx] !== null) {
+                                             return deepMergeCharacterData(defaultData[key][idx], item);
+                                        }
+                                        return item;
+                                    });
+                                    while (merged[key].length < defaultData[key].length) {
+                                        merged[key].push(JSON.parse(JSON.stringify(defaultData[key][merged[key].length])));
+                                    }
+                                }
+                            } else {
+                                merged[key] = JSON.parse(JSON.stringify(defaultData[key]));
+                            }
+                        }
+                    }
+                }
+                return merged;
+            }
+
+
+            // --- Event Handlers ---
+            // This handles ALL input changes across the entire page.
+            function handleInputChange(event) {
+                const target = event.target;
+                let value = target.value;
+                const id = target.id;
+                const section = target.dataset.section;
+                const field = target.dataset.field;
+                const subfield = target.dataset.subfield;
+                const index = parseInt(target.dataset.index);
+
+                // Convert number inputs
+                if (target.type === 'number') {
+                    value = value === '' ? '' : parseFloat(value);
+                }
+
+                // Update characterData based on element's attributes
+                if (section === 'stats' && subfield) {
+                    characterData.stats[field][subfield] = value;
+                } else if (section && field && !isNaN(index)) { // Dynamic arrays (modules, traits, equipment, defense)
+                    characterData[section][index][field] = value;
+                } else if (section === 'competencies' && !isNaN(index)) { // Competencies
+                    characterData.competencies[index] = value;
+                } else if (id === 'name') {
+                    characterData.name = value;
+                } else if (id === 'description') {
+                    characterData.description = value;
+                } else if (id === 'notes') {
+                    characterData.notes = value;
+                } else if (id === 'expCurrent') {
+                    characterData.experience.current = value;
+                } else if (id === 'expUnspent') {
+                    characterData.experience.unspent = value;
+                } else if (id === 'heroismCurrent') {
+                    characterData.heroism.current = value;
+                } else if (id === 'heroismBonus') {
+                    characterData.heroism.bonusMax = value;
+                } else if (target.closest('#characteristics-section')) { // Handle characteristic growth inputs
+                     const charKey = target.dataset.char;
+                     if (characterData.characteristics.hasOwnProperty(charKey)) {
+                        // For inputs directly controlling growth, update characterData and recalculate dice
+                        characterData.characteristics[charKey].growth = value;
+                        characterData.characteristics[charKey].dice = getDiceFromGrowth(value);
+                     }
+                }
+
+                calculateStats(); // Recalculate derived stats
+
+                // Update only the *display* elements (read-only or calculated)
+                updateStatsDisplayValues(); // This updates all derived stat displays and heroism
+                autoSaveCharacter();
+                // IMPORTANT: Do NOT call updateUI() or renderX() here for general input changes.
+                // This prevents inputs from losing focus.
+            }
+
+            // Attach listeners to all inputs. This is called once on DOMContentLoaded
+            // and also by renderX functions for dynamically created inputs.
+            function attachInputListeners(parentElement = document) {
+                parentElement.querySelectorAll('input:not([readonly]), textarea, select').forEach(input => {
+                    // Remove existing listener to prevent duplicates, especially important for dynamic elements
+                    input.removeEventListener('input', handleInputChange);
+                    input.addEventListener('input', handleInputChange);
+                });
+            }
+
+            // Handle characteristic growth +/- buttons (these cause a re-render of characteristics and stats)
+            function handleGrowthAdjustment(event) {
+                const charKey = event.target.dataset.char;
+                const amount = parseInt(event.target.dataset.amount);
+
+                const newChar = { ...characterData.characteristics[charKey] };
+                const newGrowth = Math.max(0, newChar.growth + amount);
+                newChar.growth = newGrowth;
+                newChar.dice = getDiceFromGrowth(newGrowth);
+
+                characterData.characteristics[charKey] = newChar;
+
+                calculateStats();
+                renderCharacteristics(); // Re-render characteristics to update dice/growth display
+                updateStatsDisplayValues(); // Update stats display values after characteristic change
+                autoSaveCharacter();
+            }
+
+            function attachGrowthListeners() {
+                document.querySelectorAll('.adjust-growth').forEach(button => {
+                    button.removeEventListener('click', handleGrowthAdjustment);
+                    button.addEventListener('click', handleGrowthAdjustment);
+                });
+            }
+
+            // Functions for adding dynamic rows (these cause full re-renders of their sections)
+            function addModule() {
+                characterData.modules.push({ type: '', name: '' });
+                autoSaveCharacter();
+                renderModules(); // Only re-render modules section
+            }
+
+            function addTrait() {
+                characterData.traits.push({ name: '', tag: '', heroism: '', description: '' });
+                autoSaveCharacter();
+                renderTraits(); // Only re-render traits section
+            }
+
+            function addEquipment() {
+                characterData.equipment.push({ name: '', damage: '', description: '' });
+                autoSaveCharacter();
+                renderEquipment(); // Only re-render equipment section
+            }
+
+            let deleteTarget = null;
+            const confirmationModal = document.getElementById('confirmationModal');
+            const modalText = document.getElementById('modal-text');
+
+            function showConfirmationModal(section, index) {
+                deleteTarget = { section, index };
+                modalText.textContent = `Вы уверены, что хотите удалить эту строку из раздела "${section === 'modules' ? 'Модули' : section === 'traits' ? 'Черты' : 'Снаряжение'}"?`;
+                confirmationModal.style.display = 'flex';
+            }
+
+            function confirmDeletion() {
+                if (deleteTarget) {
+                    const { section, index } = deleteTarget;
+                    if (section === 'modules') {
+                        characterData.modules.splice(index, 1);
+                        renderModules(); // Re-render only modules
+                    } else if (section === 'traits') {
+                        characterData.traits.splice(index, 1);
+                        renderTraits(); // Re-render only traits
+                    } else if (section === 'equipment') {
+                        characterData.equipment.splice(index, 1);
+                        renderEquipment(); // Re-render only equipment
+                    }
+                    autoSaveCharacter();
+                    deleteTarget = null;
+                }
+                confirmationModal.style.display = 'none';
+            }
+
+            function cancelDeletion() {
+                deleteTarget = null;
+                confirmationModal.style.display = 'none';
+            }
+
+            function attachDeleteListeners(parentElement) {
+                parentElement.querySelectorAll('.delete-button').forEach(button => {
+                    button.removeEventListener('click', handleDeleteClick);
+                    button.addEventListener('click', handleDeleteClick);
+                });
+            }
+
+            function handleDeleteClick(event) {
+                const section = event.target.dataset.section;
+                const index = parseInt(event.target.dataset.index);
+                showConfirmationModal(section, index);
+            }
+
+            // --- Tab Functionality ---
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            function activateTab(tabId) {
+                tabButtons.forEach(button => {
+                    button.classList.remove('active');
+                    if (button.dataset.tab === tabId) {
+                        button.classList.add('active');
+                    }
+                });
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${tabId}-tab`) {
+                        content.classList.add('active');
+                    }
+                });
+                localStorage.setItem(LAST_ACTIVE_TAB_KEY, tabId);
+            }
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    activateTab(event.target.dataset.tab);
+                });
+            });
+
+            // Handle navigation to management page
+            document.getElementById('go-to-management-button').addEventListener('click', () => {
+                autoSaveCharacter();
+                window.location.href = 'management.html';
+            });
+
+            // Handle local save button (top right)
+            document.getElementById('save-character-top-button').addEventListener('click', async () => {
+                if (currentFileHandleForAutoSave && await verifyPermission(currentFileHandleForAutoSave, true)) {
+                    await saveCharacterToFileOpen();
+                    alert(`Персонаж "${characterData.name || 'Без имени'}" сохранен в текущий файл!`);
+                } else {
+                    if (!('showDirectoryPicker' in window)) {
+                        alert('Ваш браузер не поддерживает File System Access API. Невозможно выбрать папку для сохранения.');
+                        return;
+                    }
+                    try {
+                        const folderHandle = await window.showDirectoryPicker({ id: 'heroframe-character-folder', mode: 'readwrite' });
+                        if (folderHandle) {
+                            if (await verifyPermission(folderHandle, true)) {
+                                characterFolderHandle = folderHandle;
+                                localStorage.setItem(FOLDER_HANDLE_NAME_KEY, characterFolderHandle.name);
+                                const defaultFileName = `${characterData.name || 'Unnamed_Character'}_${Date.now()}.json`;
+                                const fileHandle = await folderHandle.getFileHandle(defaultFileName, { create: true });
+                                const writable = await fileHandle.createWritable();
+                                await writable.write(JSON.stringify(characterData, null, 2));
+                                await writable.close();
+                                currentFileHandleForAutoSave = fileHandle;
+                                localStorage.setItem(ACTIVE_FILE_HANDLE_NAME_KEY, fileHandle.name);
+                                alert(`Персонаж "${characterData.name || 'Без имени'}" сохранен в папку "${characterFolderHandle.name}"!`);
+                            } else {
+                                alert('Доступ к выбранной папке отклонен. Не удалось сохранить персонажа.');
+                            }
+                        } else {
+                            alert('Выбор папки отменен. Не удалось сохранить персонажа.');
+                        }
+                    } catch (error) {
+                        console.error("Error saving character locally (select folder prompt):", error);
+                        alert(`Ошибка при сохранении персонажа в папку: ${error.message}`);
+                    }
+                }
+            });
+
+            // --- Share Code Generation Functionality ---
+            const generateShareCodeButton = document.getElementById('generate-share-code-button');
+            const shareCodeOutput = document.getElementById('share-code-output');
+            const copyShareCodeButton = document.getElementById('copy-share-code-button');
+
+            generateShareCodeButton.addEventListener('click', () => {
+                const dataStr = JSON.stringify(characterData);
+                const base64Code = btoa(dataStr);
+                shareCodeOutput.value = base64Code;
+                shareCodeOutput.classList.remove('hidden');
+                copyShareCodeButton.classList.remove('hidden');
+                shareCodeOutput.select();
+            });
+
+            copyShareCodeButton.addEventListener('click', () => {
+                shareCodeOutput.select();
+                document.execCommand('copy');
+                alert('Код скопирован в буфер обмена!');
+            });
+
+
+            // --- Initial load and setup ---
+            // Load active character data and trigger initial UI update
+            loadActiveCharacter(); // This will call createStatsDOM, calculateStats, and updateUI initially.
+
+            // Attach listeners to static elements that are not re-rendered by render functions
+            document.getElementById('name').addEventListener('input', handleInputChange);
+            document.getElementById('description').addEventListener('input', handleInputChange);
+            document.getElementById('expCurrent').addEventListener('input', handleInputChange);
+            document.getElementById('expUnspent').addEventListener('input', handleInputChange);
+            document.getElementById('notes').addEventListener('input', handleInputChange);
+            document.getElementById('heroismCurrent').addEventListener('input', handleInputChange);
+            document.getElementById('heroismBonus').addEventListener('input', handleInputChange);
+
+
+            // Confirm/Cancel deletion buttons
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDeletion);
+            document.getElementById('cancelDeleteBtn').addEventListener('click', cancelDeletion);
+
+            // Restore last active tab or set default
+            const lastActiveTab = localStorage.getItem(LAST_ACTIVE_TAB_KEY) || 'modules';
+            activateTab(lastActiveTab);
+        });
+    </script>
+</body>
+</html>
