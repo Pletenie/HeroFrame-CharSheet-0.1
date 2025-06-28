@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Лист Персонажа HeroFrame</title>
-    <link rel="manifest" href="/manifest.json">
+    <!-- Updated manifest path -->
+    <link rel="manifest" href="/HeroFrame-CharSheet-0.1/manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -365,7 +366,8 @@
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
+                // Updated path for service-worker.js
+                navigator.serviceWorker.register('/HeroFrame-CharSheet-0.1/service-worker.js')
                     .then(registration => {
                         console.log('Service Worker registered with scope:', registration.scope);
                     })
@@ -649,7 +651,7 @@
                         ` : ` <!-- For other stats (Evasion, Speed, Attention), bonus on same line if space allows -->
                             <div class="flex items-center gap-2 mt-2">
                                 <span class="text-neutral-400">Бонус:</span>
-                                <input type="number" step="${item.key === 'speed' ? 5 : 1}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="stats" data-field="${item.key}" data-subfield="bonus" id="${item.key}Bonus" />
+                                <input type="number" step="${item.key === 'speed' ? 5 : 1}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="stats" data-field="item.key" data-subfield="bonus" id="${item.key}Bonus" />
                             </div>
                         `}
                     `;
