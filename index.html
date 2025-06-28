@@ -214,16 +214,16 @@
                     <h2 class="text-2xl font-semibold mb-4 text-green-400">Персонаж</h2>
                     <div class="flex flex-col mb-4">
                         <label for="name" class="text-sm font-medium text-neutral-300 mb-1">Имя:</label>
-                        <input id="name" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                        <input id="name" name="name" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" autocomplete="given-name" />
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col">
                             <label for="expCurrent" class="text-sm font-medium text-neutral-300 mb-1">Опыт: Текущий</label>
-                            <input id="expCurrent" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                            <input id="expCurrent" name="expCurrent" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" autocomplete="off" />
                         </div>
                         <div class="flex flex-col">
                             <label for="expUnspent" class="text-sm font-medium text-neutral-300 mb-1">Нераспределенный опыт</label>
-                            <input id="expUnspent" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 cursor-not-allowed" readonly />
+                            <input id="expUnspent" name="expUnspent" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 cursor-not-allowed" readonly autocomplete="off" />
                         </div>
                     </div>
                 </div>
@@ -244,13 +244,13 @@
                     </div>
                     <!-- Героизм -->
                     <div class="flex flex-col mb-3 pt-4 border-t border-neutral-600 mt-4">
-                        <label class="text-sm font-medium text-neutral-300 mb-1">Героизм (ТЕК/МАКС):</label>
+                        <label for="heroismCurrent" class="text-sm font-medium text-neutral-300 mb-1">Героизм (ТЕК/МАКС):</label>
                         <div class="flex items-center gap-2">
-                            <input id="heroismCurrent" type="number" step="1" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                            <input id="heroismCurrent" name="heroismCurrent" type="number" step="1" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" autocomplete="off" />
                             <span class="text-neutral-400">/</span>
-                            <input id="heroismMaxDisplay" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 cursor-not-allowed" readonly />
+                            <input id="heroismMaxDisplay" name="heroismMaxDisplay" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 cursor-not-allowed" readonly autocomplete="off" />
                             <label for="heroismBonus" class="text-sm font-medium text-neutral-300 ml-4">Бонус к максимуму:</label>
-                            <input id="heroismBonus" type="number" step="1" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                            <input id="heroismBonus" name="heroismBonus" type="number" step="1" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" autocomplete="off" />
                         </div>
                     </div>
                 </div>
@@ -343,8 +343,8 @@
                     <!-- Tab Content: Заметки (includes biography now) -->
                     <div id="notes-tab" class="tab-content">
                         <h2 class="text-2xl font-semibold mb-4 text-green-400">Биография и Заметки</h2>
-                        <textarea id="description" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-32 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-4" placeholder="Краткое описание / Биография"></textarea>
-                        <textarea id="notes" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-32 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Дополнительные заметки, связи, цели, шрамы и прочее."></textarea>
+                        <textarea id="description" name="description" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-32 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-4" placeholder="Краткое описание / Биография" autocomplete="off"></textarea>
+                        <textarea id="notes" name="notes" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-32 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Дополнительные заметки, связи, цели, шрамы и прочее." autocomplete="off"></textarea>
                     </div>
                 </div>
             </div>
@@ -413,11 +413,11 @@
                     { name: '', type: 'Броня', pgl: '', proch: '' }, { name: '', type: 'Броня', pgl: '', proch: '' },
                 ],
                 stats: {
-                    hp: { current: '', max: '', bonus: 0, note: '20 + 5*Рост Мощи + 3*Рост Духа' },
-                    evasion: { value: '', bonus: 0, note: '10 + Рост Сноровки' },
-                    speed: { value: '', bonus: 0, note: '25 + 5*Рост Мощи/Сноровки (максимальное)' },
-                    attention: { value: '', bonus: 0, note: '10 + Рост Разума' },
-                    balance: { current: '', max: '', absorb: '', bonus: 0, note: '1 + Рост Разума + Рост Духа' },
+                    hp: { current: 20, max: 20, bonus: 0, note: '20 + 5*Рост Мощи + 3*Рост Духа' }, // Initialized with numbers for current/max
+                    evasion: { value: 10, bonus: 0, note: '10 + Рост Сноровки' },
+                    speed: { value: 25, bonus: 0, note: '25 + 5*Рост Мощи/Сноровки (максимальное)' },
+                    attention: { value: 10, bonus: 0, note: '10 + Рост Разума' },
+                    balance: { current: 1, max: 1, absorb: 'd4', bonus: 0, note: '1 + Рост Разума + Рост Духа' }, // Initialized with numbers for current/max
                 },
                 heroism: { current: 10, baseMax: 10, bonusMax: 0 },
                 traits: [
@@ -457,25 +457,25 @@
 
                 // Health Points (HP)
                 const hpMaxCalculated = 20 + (5 * mightGrowth) + (3 * spiritGrowth);
-                characterData.stats.hp.max = hpMaxCalculated + (characterData.stats.hp.bonus || 0);
+                characterData.stats.hp.max = hpMaxCalculated + (parseFloat(characterData.stats.hp.bonus) || 0); // Ensure bonus is treated as number
                 if (characterData.stats.hp.current === '' || parseFloat(characterData.stats.hp.current) > characterData.stats.hp.max) {
                     characterData.stats.hp.current = characterData.stats.hp.max;
                 }
 
-                characterData.stats.evasion.value = 10 + finesseGrowth + (characterData.stats.evasion.bonus || 0);
-                characterData.stats.speed.value = 25 + (5 * Math.max(mightGrowth, finesseGrowth)) + (characterData.stats.speed.bonus || 0);
-                characterData.stats.attention.value = 10 + mindGrowth + (characterData.stats.attention.bonus || 0);
+                characterData.stats.evasion.value = 10 + finesseGrowth + (parseFloat(characterData.stats.evasion.bonus) || 0);
+                characterData.stats.speed.value = 25 + (5 * Math.max(mightGrowth, finesseGrowth)) + (parseFloat(characterData.stats.speed.bonus) || 0);
+                characterData.stats.attention.value = 10 + mindGrowth + (parseFloat(characterData.stats.attention.bonus) || 0);
 
                 // Balance
                 const balanceMaxCalculated = 1 + mindGrowth + spiritGrowth;
-                characterData.stats.balance.max = balanceMaxCalculated + (characterData.stats.balance.bonus || 0);
+                characterData.stats.balance.max = balanceMaxCalculated + (parseFloat(characterData.stats.balance.bonus) || 0); // Ensure bonus is treated as number
                 if (characterData.stats.balance.current === '' || parseFloat(characterData.stats.balance.current) > characterData.stats.balance.max) {
                     characterData.stats.balance.current = characterData.stats.balance.max;
                 }
                 characterData.stats.balance.absorb = getDiceFromGrowth(presenceGrowth);
 
                 // Heroism
-                characterData.heroism.max = characterData.heroism.baseMax + (characterData.heroism.bonusMax || 0);
+                characterData.heroism.max = characterData.heroism.baseMax + (parseFloat(characterData.heroism.bonusMax) || 0); // Ensure bonusMax is treated as number
 
                 // Calculate Unspent Experience based on current and trait costs
                 let totalTraitCost = 0;
@@ -498,15 +498,16 @@
                         might: 'Мощь', finesse: 'Сноровка', mind: 'Разум',
                         spirit: 'Дух', presence: 'Влияние'
                     }[key];
+                    const growthId = `charGrowth-${key}`;
 
                     const div = document.createElement('div');
                     div.className = 'flex items-center mb-3';
                     div.innerHTML = `
-                        <label class="characteristic-label capitalize">${labelText}:</label>
-                        <span class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 mr-2 w-20 text-center text-base">${char.dice}</span>
-                        <span class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 mr-2 w-20 text-center text-base">${char.growth}</span>
-                        <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1 px-3 rounded-full mr-1 transition duration-200 adjust-growth" data-char="${key}" data-amount="-1" ${char.growth === 0 ? 'disabled' : ''}>-</button>
-                        <button class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-1 px-3 rounded-full transition duration-200 adjust-growth" data-char="${key}" data-amount="1">+</button>
+                        <label for="${growthId}" class="characteristic-label capitalize">${labelText}:</label>
+                        <span class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 mr-2 w-20 text-center text-base" aria-labelledby="${growthId}-dice-label">${char.dice}</span>
+                        <span id="${growthId}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 mr-2 w-20 text-center text-base" aria-label="Текущий рост характеристики ${labelText}">${char.growth}</span>
+                        <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1 px-3 rounded-full mr-1 transition duration-200 adjust-growth" data-char="${key}" data-amount="-1" ${char.growth === 0 ? 'disabled' : ''} aria-label="Уменьшить рост характеристики ${labelText}">-</button>
+                        <button class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-1 px-3 rounded-full transition duration-200 adjust-growth" data-char="${key}" data-amount="1" aria-label="Увеличить рост характеристики ${labelText}">+</button>
                     `;
                     charSection.appendChild(div);
                 }
@@ -517,11 +518,12 @@
                 const compSection = document.getElementById('competencies-section');
                 compSection.innerHTML = '';
                 characterData.competencies.forEach((comp, index) => {
+                    const inputId = `competency-${index}`;
                     const div = document.createElement('div');
                     div.className = 'flex flex-col';
                     div.innerHTML = `
-                        <label class="text-sm font-medium text-neutral-300 mb-1">Компетенция ${index + 1}:</label>
-                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${comp}" data-section="competencies" data-index="${index}" />
+                        <label for="${inputId}" class="text-sm font-medium text-neutral-300 mb-1">Компетенция ${index + 1}:</label>
+                        <input id="${inputId}" name="competency-${index}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${comp}" data-section="competencies" data-index="${index}" autocomplete="off" />
                     `;
                     compSection.appendChild(div);
                 });
@@ -532,13 +534,15 @@
                 const modulesSection = document.getElementById('modules-section');
                 modulesSection.innerHTML = '';
                 characterData.modules.forEach((mod, index) => {
+                    const typeId = `moduleType-${index}`;
+                    const nameId = `moduleName-${index}`;
                     const div = document.createElement('div');
                     div.className = 'grid grid-cols-[1fr_1fr_100px] gap-2 mb-2 items-start';
                     div.innerHTML = `
-                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${mod.type}" data-section="modules" data-field="type" data-index="${index}" placeholder="Название модуля" />
+                        <input id="${typeId}" name="moduleType-${index}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${mod.type}" data-section="modules" data-field="type" data-index="${index}" placeholder="Название модуля" aria-label="Название модуля" autocomplete="off" />
                         <div class="flex items-center gap-2">
-                            <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 flex-grow" value="${mod.name}" data-section="modules" data-field="name" data-index="${index}" placeholder="Тег модуля" />
-                            <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-3 rounded-lg shadow-md transition duration-200 delete-button" data-section="modules" data-index="${index}">Удалить</button>
+                            <input id="${nameId}" name="moduleName-${index}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 flex-grow" value="${mod.name}" data-section="modules" data-field="name" data-index="${index}" placeholder="Тег модуля" aria-label="Тег модуля" autocomplete="off" />
+                            <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-3 rounded-lg shadow-md transition duration-200 delete-button" data-section="modules" data-index="${index}" aria-label="Удалить модуль">Удалить</button>
                         </div>
                     `;
                     modulesSection.appendChild(div);
@@ -551,16 +555,20 @@
                 const defSection = document.getElementById('defense-section');
                 defSection.innerHTML = '';
                 characterData.defense.forEach((def, index) => {
+                    const nameId = `defenseName-${index}`;
+                    const typeId = `defenseType-${index}`;
+                    const pglId = `defensePGL-${index}`;
+                    const prochId = `defensePROCH-${index}`;
                     const div = document.createElement('div');
                     div.className = 'grid grid-cols-4 gap-2 mb-2';
                     div.innerHTML = `
-                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${def.name}" data-section="defense" data-field="name" data-index="${index}" />
-                        <select class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="defense" data-field="type" data-index="${index}">
+                        <input id="${nameId}" name="defenseName-${index}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${def.name}" data-section="defense" data-field="name" data-index="${index}" placeholder="Название" aria-label="Название защиты" autocomplete="off" />
+                        <select id="${typeId}" name="defenseType-${index}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="defense" data-field="type" data-index="${index}" aria-label="Тип защиты">
                             <option value="Броня" ${def.type === 'Броня' ? 'selected' : ''}>Броня</option>
                             <option value="Покров" ${def.type === 'Покров' ? 'selected' : ''}>Покров</option>
                         </select>
-                        <input type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${def.pgl}" data-section="defense" data-field="pgl" data-index="${index}" />
-                        <input type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${def.proch}" data-section="defense" data-field="proch" data-index="${index}" />
+                        <input id="${pglId}" name="defensePGL-${index}" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${def.pgl}" data-section="defense" data-field="pgl" data-index="${index}" placeholder="ПОГЛ" aria-label="Поглощение" autocomplete="off" />
+                        <input id="${prochId}" name="defensePROCH-${index}" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${def.proch}" data-section="defense" data-field="proch" data-index="${index}" placeholder="ПРОЧ" aria-label="Прочность" autocomplete="off" />
                     `;
                     defSection.appendChild(div);
                 });
@@ -571,16 +579,22 @@
                 const traitsSection = document.getElementById('traits-section');
                 traitsSection.innerHTML = '';
                 characterData.traits.forEach((trait, index) => {
+                    const nameId = `traitName-${index}`;
+                    const tagId = `traitTag-${index}`;
+                    const heroismId = `traitHeroism-${index}`;
+                    const costId = `traitCost-${index}`;
+                    const descriptionId = `traitDescription-${index}`;
+
                     const div = document.createElement('div');
                     div.className = 'grid grid-cols-[1fr_1fr_4rem_4rem_100px] gap-2 mb-2 items-start'; // Added 4rem for cost input
                     div.innerHTML = `
-                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${trait.name}" data-section="traits" data-field="name" data-index="${index}" placeholder="Название" />
-                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${trait.tag}" data-section="traits" data-field="tag" data-index="${index}" placeholder="Тег" />
-                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full" value="${trait.heroism}" data-section="traits" data-field="heroism" data-index="${index}" placeholder="Героизм" />
-                        <input type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full" value="${trait.cost}" data-section="traits" data-field="cost" data-index="${index}" placeholder="Стоимость" />
-                        <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 delete-button" data-section="traits" data-index="${index}">Удалить</button>
+                        <input id="${nameId}" name="traitName-${index}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${trait.name}" data-section="traits" data-field="name" data-index="${index}" placeholder="Название" aria-label="Название черты" autocomplete="off" />
+                        <input id="${tagId}" name="traitTag-${index}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${trait.tag}" data-section="traits" data-field="tag" data-index="${index}" placeholder="Тег" aria-label="Тег черты" autocomplete="off" />
+                        <input id="${heroismId}" name="traitHeroism-${index}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full" value="${trait.heroism}" data-section="traits" data-field="heroism" data-index="${index}" placeholder="Героизм" aria-label="Героизм черты" autocomplete="off" />
+                        <input id="${costId}" name="traitCost-${index}" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full" value="${trait.cost}" data-section="traits" data-field="cost" data-index="${index}" placeholder="Стоимость" aria-label="Стоимость черты" autocomplete="off" />
+                        <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 delete-button" data-section="traits" data-index="${index}" aria-label="Удалить черту">Удалить</button>
                         <div class="col-span-full mt-1"> 
-                            <textarea class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-20 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="traits" data-field="description" data-index="${index}" placeholder="Описание">${trait.description}</textarea>
+                            <textarea id="${descriptionId}" name="traitDescription-${index}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-20 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="traits" data-field="description" data-index="${index}" placeholder="Описание" aria-label="Описание черты" autocomplete="off">${trait.description}</textarea>
                         </div>
                     `;
                     traitsSection.appendChild(div);
@@ -593,14 +607,17 @@
                 const eqSection = document.getElementById('equipment-section');
                 eqSection.innerHTML = '';
                 characterData.equipment.forEach((item, index) => {
+                    const nameId = `equipmentName-${index}`;
+                    const damageId = `equipmentDamage-${index}`;
+                    const descriptionId = `equipmentDescription-${index}`;
                     const div = document.createElement('div');
                     div.className = 'grid grid-cols-[1fr_1fr_100px] gap-2 mb-2 items-start';
                     div.innerHTML = `
-                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${item.name}" data-section="equipment" data-field="name" data-index="${index}" placeholder="Название" />
-                        <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${item.damage}" data-section="equipment" data-field="damage" data-index="${index}" placeholder="Урон" />
-                        <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 delete-button" data-section="equipment" data-index="${index}">Удалить</button>
+                        <input id="${nameId}" name="equipmentName-${index}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${item.name}" data-section="equipment" data-field="name" data-index="${index}" placeholder="Название" aria-label="Название снаряжения" autocomplete="off" />
+                        <input id="${damageId}" name="equipmentDamage-${index}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${item.damage}" data-section="equipment" data-field="damage" data-index="${index}" placeholder="Урон" aria-label="Урон снаряжения" autocomplete="off" />
+                        <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 delete-button" data-section="equipment" data-index="${index}" aria-label="Удалить снаряжение">Удалить</button>
                         <div class="col-span-full mt-1"> 
-                            <textarea class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-20 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="equipment" data-field="description" data-index="${index}" placeholder="Описание / Свойства">${item.description}</textarea>
+                            <textarea id="${descriptionId}" name="equipmentDescription-${index}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-20 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="equipment" data-field="description" data-index="${index}" placeholder="Описание / Свойства" aria-label="Описание снаряжения" autocomplete="off">${item.description}</textarea>
                         </div>
                     `;
                     eqSection.appendChild(div);
@@ -615,45 +632,49 @@
                 statsSection.innerHTML = ''; // Clear only once on initial creation
 
                 const statItems = [
-                    { key: 'hp', label: 'Здоровье (ХП)', icon: '<i class="fas fa-heart text-red-500"></i>', currentField: true, maxField: true, tooltip: characterData.stats.hp.note },
-                    { key: 'evasion', label: 'Уклонение (УКЛ)', icon: '<i class="fas fa-shield-alt text-blue-400"></i>', currentField: false, maxField: false, tooltip: characterData.stats.evasion.note },
-                    { key: 'speed', label: 'Скорость (СКР)', icon: '<i class="fas fa-shoe-prints text-orange-400"></i>', currentField: false, maxField: false, tooltip: characterData.stats.speed.note },
-                    { key: 'attention', label: 'Внимательность', icon: '<i class="fas fa-eye text-purple-400"></i>', currentField: false, maxField: false, tooltip: characterData.stats.attention.note },
-                    { key: 'balance', label: 'Баланс (БЛН)', icon: '<i class="fas fa-balance-scale text-yellow-400"></i>', currentField: true, maxField: true, absorbField: true, tooltip: characterData.stats.balance.note },
+                    { key: 'hp', label: 'Здоровье (ХП)', icon: '<i class="fas fa-heart text-red-500"></i>', currentField: true, maxField: true, bonusField: true, note: '20 + 5*Рост Мощи + 3*Рост Духа' },
+                    { key: 'evasion', label: 'Уклонение (УКЛ)', icon: '<i class="fas fa-shield-alt text-blue-400"></i>', currentField: false, maxField: false, bonusField: true, note: '10 + Рост Сноровки' },
+                    { key: 'speed', label: 'Скорость (СКР)', icon: '<i class="fas fa-shoe-prints text-orange-400"></i>', currentField: false, maxField: false, bonusField: true, note: '25 + 5*Рост Мощи/Сноровки (максимальное)' },
+                    { key: 'attention', label: 'Внимательность', icon: '<i class="fas fa-eye text-purple-400"></i>', currentField: false, maxField: false, bonusField: true, note: '10 + Рост Разума' },
+                    { key: 'balance', label: 'Баланс (БЛН)', icon: '<i class="fas fa-balance-scale text-yellow-400"></i>', currentField: true, maxField: true, absorbField: true, bonusField: true, note: '1 + Рост Разума + Рост Духа' },
                 ];
 
                 statItems.forEach(item => {
+                    const currentId = `${item.key}Current`;
+                    const maxOrValueId = `${item.key}MaxOrValueDisplay`;
+                    const bonusId = `${item.key}Bonus`;
+                    const absorbId = `${item.key}AbsorbDisplay`;
+
                     const div = document.createElement('div');
                     div.className = 'flex flex-col mb-3 p-2 bg-neutral-800 rounded-md border border-neutral-600';
                     div.innerHTML = `
                         <label class="text-lg font-bold text-neutral-200 mb-2 flex items-center gap-2">${item.icon} ${item.label}:</label>
                         <div class="flex flex-wrap items-center gap-2">
                             ${item.currentField ? `
+                                <label for="${currentId}" class="text-neutral-400 sr-only">Текущее ${item.label}:</label>
                                 <span class="text-neutral-400">Текущее:</span>
-                                <input type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="stats" data-field="${item.key}" data-subfield="current" id="${item.key}Current" />
+                                <input id="${currentId}" name="${currentId}" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="stats" data-field="${item.key}" data-subfield="current" autocomplete="off" />
                             ` : ''}
 
+                            <label for="${maxOrValueId}" class="text-neutral-400 sr-only">${item.key === 'hp' || item.key === 'balance' ? 'Макс' : 'Значение'} ${item.label}:</label>
                             <span class="text-neutral-400">${item.key === 'hp' || item.key === 'balance' ? 'Макс:' : 'Значение:'}</span>
                             <div class="tooltip-container">
-                                <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 cursor-not-allowed" readonly id="${item.key}MaxOrValueDisplay" />
-                                <span class="tooltip-text">${item.tooltip}</span>
+                                <input id="${maxOrValueId}" name="${maxOrValueId}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 cursor-not-allowed" readonly aria-label="${item.label} ${item.key === 'hp' || item.key === 'balance' ? 'Максимальное' : 'Значение'}" autocomplete="off" />
+                                <span class="tooltip-text">${item.note}</span>
                             </div>
                         </div>
-                        ${item.currentField ? ` <!-- For HP and Balance, bonus/absorb on a new line -->
+                        ${item.bonusField ? `
                             <div class="flex items-center gap-2 mt-2">
+                                <label for="${bonusId}" class="text-neutral-400 sr-only">Бонус к ${item.label}:</label>
                                 <span class="text-neutral-400">Бонус:</span>
-                                <input type="number" step="${item.key === 'speed' ? 5 : 1}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="stats" data-field="${item.key}" data-subfield="bonus" id="${item.key}Bonus" />
+                                <input id="${bonusId}" name="${bonusId}" type="number" step="${item.key === 'speed' ? 5 : 1}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="stats" data-field="${item.key}" data-subfield="bonus" autocomplete="off" />
                                 ${item.absorbField ? `
+                                    <label for="${absorbId}" class="text-neutral-400 sr-only">Поглощение Баланса:</label>
                                     <span class="text-neutral-400 ml-4">ПОГЛ:</span>
-                                    <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 cursor-not-allowed" readonly id="${item.key}AbsorbDisplay" />
+                                    <input id="${absorbId}" name="${absorbId}" type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 cursor-not-allowed" readonly aria-label="Поглощение Баланса" autocomplete="off" />
                                 ` : ''}
                             </div>
-                        ` : ` <!-- For other stats (Evasion, Speed, Attention), bonus on same line if space allows -->
-                            <div class="flex items-center gap-2 mt-2">
-                                <span class="text-neutral-400">Бонус:</span>
-                                <input type="number" step="${item.key === 'speed' ? 5 : 1}" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-20 focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="stats" data-field="item.key" data-subfield="bonus" id="${item.key}Bonus" />
-                            </div>
-                        `}
+                        ` : ''}
                     `;
                     statsSection.appendChild(div);
                 });
@@ -858,41 +879,52 @@
             }
 
             function deepMergeCharacterData(defaultData, loadedData) {
-                const merged = { ...defaultData, ...loadedData };
+                const merged = { ...defaultData }; // Start with all default keys
 
                 for (const key in defaultData) {
                     if (defaultData.hasOwnProperty(key)) {
                         if (typeof defaultData[key] === 'object' && defaultData[key] !== null && !Array.isArray(defaultData[key])) {
+                            // If it's a nested object, recursively merge it
                             merged[key] = deepMergeCharacterData(defaultData[key], loadedData[key] || {});
                         } else if (Array.isArray(defaultData[key])) {
+                            // If it's an array
                             if (Array.isArray(loadedData[key])) {
-                                if (key === 'modules' || key === 'traits' || key === 'equipment') {
+                                // If loaded data also has an array for this key
+                                if (key === 'modules' || key === 'traits' || key === 'equipment' || key === 'defense') {
+                                    // For lists where items are objects, merge each item
                                     merged[key] = loadedData[key].map(item => {
-                                        // Ensure new 'cost' field is added if missing in old loaded data
-                                        if (key === 'traits' && item.cost === undefined) {
-                                            return { ...item, cost: 0 };
-                                        }
-                                        return { ...item };
+                                        // Create a default item structure for merging
+                                        let defaultItem = {};
+                                        if (key === 'modules') defaultItem = { type: '', name: '' };
+                                        if (key === 'traits') defaultItem = { name: '', tag: '', heroism: '', cost: 0, description: '' };
+                                        if (key === 'equipment') defaultItem = { name: '', damage: '', description: '' };
+                                        if (key === 'defense') defaultItem = { name: '', type: 'Броня', pgl: '', proch: '' }; // Default to 'Броня' if type is not set
+
+                                        return deepMergeCharacterData(defaultItem, item); // Recursive merge for individual array items
                                     });
+                                    // Add any missing default items if loaded data array is shorter
                                     if (loadedData[key].length < defaultData[key].length) {
-                                        for(let i = loadedData[key].length; i < defaultData[key].length; i++) {
+                                        for (let i = loadedData[key].length; i < defaultData[key].length; i++) {
                                             merged[key].push(JSON.parse(JSON.stringify(defaultData[key][i])));
                                         }
                                     }
-                                } else if (key === 'defense' || key === 'competencies') {
-                                    merged[key] = loadedData[key].slice(0, defaultData[key].length).map((item, idx) => {
-                                        if (typeof defaultData[key][idx] === 'object' && defaultData[key][idx] !== null) {
-                                             return deepMergeCharacterData(defaultData[key][idx], item);
-                                        }
-                                        return item;
-                                    });
+                                } else if (key === 'competencies') {
+                                    // For simple string arrays, just copy/fill up to default length
+                                    merged[key] = loadedData[key].slice(0, defaultData[key].length).map(item => item || ''); // Ensure no nulls
                                     while (merged[key].length < defaultData[key].length) {
-                                        merged[key].push(JSON.parse(JSON.stringify(defaultData[key][merged[key].length])));
+                                        merged[key].push('');
                                     }
+                                } else {
+                                    // For other arrays (if any), just use loaded if array, else default
+                                    merged[key] = JSON.parse(JSON.stringify(defaultData[key]));
                                 }
                             } else {
+                                // If loaded data is not an array for this key, use default
                                 merged[key] = JSON.parse(JSON.stringify(defaultData[key]));
                             }
+                        } else {
+                            // For primitive values or non-object types, use loadedData if it exists, otherwise defaultData
+                            merged[key] = loadedData.hasOwnProperty(key) ? loadedData[key] : defaultData[key];
                         }
                     }
                 }
@@ -918,7 +950,12 @@
 
                 // Update characterData based on element's attributes
                 if (section === 'stats' && subfield) {
-                    characterData.stats[field][subfield] = value;
+                    // Ensure the nested object exists before setting property
+                    if (characterData.stats[field]) {
+                        characterData.stats[field][subfield] = value;
+                    } else {
+                        console.warn(`Attempted to set property '${subfield}' on undefined stats field '${field}'`);
+                    }
                 } else if (section && field && !isNaN(index)) { // Dynamic arrays (modules, traits, equipment, defense)
                     characterData[section][index][field] = value;
                 } else if (section === 'competencies' && !isNaN(index)) { // Competencies
@@ -938,8 +975,8 @@
                 } else if (target.closest('#characteristics-section')) { // Handle characteristic growth inputs
                      const charKey = target.dataset.char;
                      if (characterData.characteristics.hasOwnProperty(charKey)) {
-                        characterData.characteristics[charKey].growth = value;
-                        characterData.characteristics[charKey].dice = getDiceFromGrowth(value);
+                        characterData.characteristics[charKey].growth = value; // Update growth directly
+                        characterData.characteristics[charKey].dice = getDiceFromGrowth(value); // Update dice based on new growth
                      }
                 }
 
@@ -1147,10 +1184,10 @@
             loadActiveCharacter(); // This will call createStatsDOM, calculateStats, and updateUI initially.
 
             // Attach listeners to static elements that are not re-rendered by render functions
+            // These still need to be attached after initial UI update
             document.getElementById('name').addEventListener('input', handleInputChange);
             document.getElementById('description').addEventListener('input', handleInputChange);
             document.getElementById('expCurrent').addEventListener('input', handleInputChange);
-            // document.getElementById('expUnspent').addEventListener('input', handleInputChange); // This is now readonly and calculated
             document.getElementById('notes').addEventListener('input', handleInputChange);
             document.getElementById('heroismCurrent').addEventListener('input', handleInputChange);
             document.getElementById('heroismBonus').addEventListener('input', handleInputChange);
