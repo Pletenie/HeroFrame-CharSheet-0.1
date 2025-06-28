@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Управление Персонажами HeroFrame</title>
-    <link rel="manifest" href="/manifest.json">
+    <!-- Updated manifest path -->
+    <link rel="manifest" href="/HeroFrame-CharSheet-0.1/manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -190,7 +191,8 @@
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
+                // Updated path for service-worker.js
+                navigator.serviceWorker.register('/HeroFrame-CharSheet-0.1/service-worker.js')
                     .then(registration => {
                         console.log('Service Worker registered with scope:', registration.scope);
                     })
@@ -201,17 +203,14 @@
         }
 
         // Helper function to verify File System Access API permissions
-        // Defined globally to be accessible by event listeners and other functions
         async function verifyPermission(handle, readWrite) {
             const options = {};
             if (readWrite) {
                 options.mode = 'readwrite';
             }
-            // Query permission
             if ((await handle.queryPermission(options)) === 'granted') {
                 return true;
             }
-            // Request permission if not granted
             if ((await handle.requestPermission(options)) === 'granted') {
                 return true;
             }
@@ -221,7 +220,7 @@
         // Global constants for localStorage keys - defined outside DOMContentLoaded
         const FOLDER_HANDLE_NAME_KEY = 'heroframe_character_folder_handle_name'; // Stores name of the folder for persistence hint
         const ACTIVE_CHARACTER_LOCAL_STORAGE_KEY = 'heroframe_active_character_data'; // Key for current active character
-        const ACTIVE_FILE_HANDLE_NAME_KEY = 'heroframe_active_file_handle_name'; // Stores name of the active file for persistence hint
+        const ACTIVE_FILE_HANDLE_KEY = 'heroframe_active_file_handle_name'; // Stores name of the active file for persistence hint
 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -423,7 +422,7 @@
                     const loadedCharacterData = JSON.parse(contents);
 
                     localStorage.setItem(ACTIVE_CHARACTER_LOCAL_STORAGE_KEY, JSON.stringify(loadedCharacterData));
-                    localStorage.setItem(ACTIVE_FILE_HANDLE_NAME_KEY, fileHandle.name); // Store active file name for auto-save
+                    localStorage.setItem(ACTIVE_FILE_HANDLE_KEY, fileHandle.name); // Store active file name for auto-save
 
                     alert(`Персонаж "${loadedCharacterData.name || fileName}" загружен в активный лист!`);
                     window.location.href = 'index.html'; // Go back to character sheet
@@ -466,8 +465,8 @@
                         await listCharactersInFolder();
                         deleteFileName = null;
                         // If the deleted file was the active one, clear its handle from localStorage
-                        if (localStorage.getItem(ACTIVE_FILE_HANDLE_NAME_KEY) === deleteFileName) {
-                            localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                        if (localStorage.getItem(ACTIVE_FILE_HANDLE_KEY) === deleteFileName) {
+                            localStorage.removeItem(ACTIVE_FILE_HANDLE_KEY);
                         }
                     } catch (error) {
                         console.error("Error deleting file:", error);
