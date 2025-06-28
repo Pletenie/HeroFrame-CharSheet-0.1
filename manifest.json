@@ -2,18 +2,18 @@
     "name": "HeroFrame Char Sheet",
     "short_name": "HeroFrame",
     "description": "Лист персонажа для НРИ HeroFrame",
-    "start_url": "/",
+    "start_url": "/HeroFrame-CharSheet-0.1/",
     "display": "standalone",
     "background_color": "#1f2937",
     "theme_color": "#facc15",
     "icons": [
         {
-            "src": "/icons/icon-192x192.png",
+            "src": "/HeroFrame-CharSheet-0.1/icons/icon-192x192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "/icons/icon-512x512.png",
+            "src": "/HeroFrame-CharSheet-0.1/icons/icon-512x512.png",
             "sizes": "512x512",
             "type": "image/png"
         }
