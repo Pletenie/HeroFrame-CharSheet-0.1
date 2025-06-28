@@ -149,7 +149,7 @@
             grid-template-columns: 1fr 1fr 100px; /* Name, Tag/Damage, Button */
         }
         #traits-section .grid {
-            grid-template-columns: 1fr 1fr 4rem 100px; /* Name, Tag, Heroism (4rem), Button */
+            grid-template-columns: 1fr 1fr 4rem 4rem 100px; /* Name, Tag, Heroism (4rem), Cost (4rem), Button */
         }
         
         .col-span-full {
@@ -222,7 +222,7 @@
                         </div>
                         <div class="flex flex-col">
                             <label for="expUnspent" class="text-sm font-medium text-neutral-300 mb-1">Нераспределенный опыт</label>
-                            <input id="expUnspent" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+                            <input id="expUnspent" type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 cursor-not-allowed" readonly />
                         </div>
                     </div>
                 </div>
@@ -294,10 +294,11 @@
                     <!-- Tab Content: Черты -->
                     <div id="traits-tab" class="tab-content">
                         <h2 class="text-2xl font-semibold mb-4 text-green-400">Черты</h2>
-                        <div class="grid grid-cols-[1fr_1fr_4rem_100px] gap-2 text-sm font-semibold text-neutral-400 mb-2">
+                        <div class="grid grid-cols-[1fr_1fr_4rem_4rem_100px] gap-2 text-sm font-semibold text-neutral-400 mb-2">
                             <span>Название</span>
                             <span>Тег</span>
                             <span>Героизм</span>
+                            <span>Стоимость опыта</span>
                             <span></span> <!-- Empty for delete button -->
                         </div>
                         <div id="traits-section">
@@ -393,7 +394,7 @@
         const ACTIVE_CHARACTER_LOCAL_STORAGE_KEY = 'heroframe_active_character_data';
         const LAST_ACTIVE_TAB_KEY = 'heroframe_last_active_tab';
         const FOLDER_HANDLE_NAME_KEY = 'heroframe_character_folder_handle_name';
-        const ACTIVE_FILE_HANDLE_NAME_KEY = 'heroframe_active_file_handle_name';
+        const ACTIVE_FILE_HANDLE_KEY = 'heroframe_active_file_handle_name';
 
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -418,8 +419,10 @@
                 },
                 heroism: { current: 10, baseMax: 10, bonusMax: 0 },
                 traits: [
-                    { name: '', tag: '', heroism: '', description: '' }, { name: '', tag: '', heroism: '', description: '' },
-                    { name: '', tag: '', heroism: '', description: '' }, { name: '', tag: '', heroism: '', description: '' },
+                    { name: '', tag: '', heroism: '', cost: 0, description: '' }, // Added cost
+                    { name: '', tag: '', heroism: '', cost: 0, description: '' }, // Added cost
+                    { name: '', tag: '', heroism: '', cost: 0, description: '' }, // Added cost
+                    { name: '', tag: '', heroism: '', cost: 0, description: '' }, // Added cost
                 ],
                 equipment: [
                     { name: '', damage: '', description: '' }, { name: '', damage: '', description: '' },
@@ -450,6 +453,7 @@
                 const mindGrowth = characterData.characteristics.mind.growth;
                 const presenceGrowth = characterData.characteristics.presence.growth;
 
+                // Health Points (HP)
                 const hpMaxCalculated = 20 + (5 * mightGrowth) + (3 * spiritGrowth);
                 characterData.stats.hp.max = hpMaxCalculated + (characterData.stats.hp.bonus || 0);
                 if (characterData.stats.hp.current === '' || parseFloat(characterData.stats.hp.current) > characterData.stats.hp.max) {
@@ -460,6 +464,7 @@
                 characterData.stats.speed.value = 25 + (5 * Math.max(mightGrowth, finesseGrowth)) + (characterData.stats.speed.bonus || 0);
                 characterData.stats.attention.value = 10 + mindGrowth + (characterData.stats.attention.bonus || 0);
 
+                // Balance
                 const balanceMaxCalculated = 1 + mindGrowth + spiritGrowth;
                 characterData.stats.balance.max = balanceMaxCalculated + (characterData.stats.balance.bonus || 0);
                 if (characterData.stats.balance.current === '' || parseFloat(characterData.stats.balance.current) > characterData.stats.balance.max) {
@@ -467,7 +472,15 @@
                 }
                 characterData.stats.balance.absorb = getDiceFromGrowth(presenceGrowth);
 
+                // Heroism
                 characterData.heroism.max = characterData.heroism.baseMax + (characterData.heroism.bonusMax || 0);
+
+                // Calculate Unspent Experience based on current and trait costs
+                let totalTraitCost = 0;
+                characterData.traits.forEach(trait => {
+                    totalTraitCost += (parseFloat(trait.cost) || 0);
+                });
+                characterData.experience.unspent = (parseFloat(characterData.experience.current) || 0) - totalTraitCost;
             }
 
             // --- Rendering Functions to update the HTML dynamically ---
@@ -557,11 +570,12 @@
                 traitsSection.innerHTML = '';
                 characterData.traits.forEach((trait, index) => {
                     const div = document.createElement('div');
-                    div.className = 'grid grid-cols-[1fr_1fr_4rem_100px] gap-2 mb-2 items-start'; // 4rem for heroism input
+                    div.className = 'grid grid-cols-[1fr_1fr_4rem_4rem_100px] gap-2 mb-2 items-start'; // Added 4rem for cost input
                     div.innerHTML = `
                         <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${trait.name}" data-section="traits" data-field="name" data-index="${index}" placeholder="Название" />
                         <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500" value="${trait.tag}" data-section="traits" data-field="tag" data-index="${index}" placeholder="Тег" />
                         <input type="text" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full" value="${trait.heroism}" data-section="traits" data-field="heroism" data-index="${index}" placeholder="Героизм" />
+                        <input type="number" class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 w-full" value="${trait.cost}" data-section="traits" data-field="cost" data-index="${index}" placeholder="Стоимость" />
                         <button class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 delete-button" data-section="traits" data-index="${index}">Удалить</button>
                         <div class="col-span-full mt-1"> 
                             <textarea class="bg-neutral-900 text-neutral-100 border border-neutral-600 rounded-md p-2 w-full h-20 resize-y focus:outline-none focus:ring-2 focus:ring-yellow-500" data-section="traits" data-field="description" data-index="${index}" placeholder="Описание">${trait.description}</textarea>
@@ -641,7 +655,8 @@
                     `;
                     statsSection.appendChild(div);
                 });
-                attachInputListeners(statsSection); // Attach listeners only once when DOM is created
+                // Event listeners for stats inputs are attached here once, as their DOM is static
+                attachInputListeners(statsSection);
             }
 
             // Function to update *only* the values of existing stat DOM elements
@@ -696,6 +711,10 @@
                 if (balanceMaxDisplayEl) balanceMaxDisplayEl.value = balance.max;
                 if (balanceAbsorbDisplayEl) balanceAbsorbDisplayEl.value = balance.absorb;
                 if (balanceBonusEl) balanceBonusEl.value = balance.bonus;
+
+                // Update Unspent Experience
+                const expUnspentEl = document.getElementById('expUnspent');
+                if (expUnspentEl) expUnspentEl.value = characterData.experience.unspent;
             }
 
 
@@ -706,7 +725,6 @@
                 document.getElementById('name').value = characterData.name;
                 document.getElementById('description').value = characterData.description;
                 document.getElementById('expCurrent').value = characterData.experience.current;
-                document.getElementById('expUnspent').value = characterData.experience.unspent;
                 document.getElementById('notes').value = characterData.notes;
 
                 // Re-render sections that might have structural changes
@@ -717,7 +735,7 @@
                 renderTraits();
                 renderEquipment();
 
-                // Update values for stats, but don't re-render the DOM for the section
+                // Update values for stats and other derived fields, but don't re-render the DOM for the section
                 updateStatsDisplayValues();
             }
 
@@ -739,12 +757,12 @@
                         } catch (error) {
                             console.warn("Error auto-saving to file:", error);
                             currentFileHandleForAutoSave = null;
-                            localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                            localStorage.removeItem(ACTIVE_FILE_HANDLE_KEY);
                         }
                     } else {
                         console.warn("Permission lost for active file handle, cannot auto-save to file.");
                         currentFileHandleForAutoSave = null;
-                        localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                        localStorage.removeItem(ACTIVE_FILE_HANDLE_KEY);
                     }
                 }
             }
@@ -766,7 +784,7 @@
                     characterData = JSON.parse(JSON.stringify(getDefaultCharacterData()));
                 }
 
-                const storedFileHandleName = localStorage.getItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                const storedFileHandleName = localStorage.getItem(ACTIVE_FILE_HANDLE_KEY);
                 const storedFolderHandleName = localStorage.getItem(FOLDER_HANDLE_NAME_KEY);
 
                 if (storedFileHandleName && storedFolderHandleName && 'showDirectoryPicker' in window) {
@@ -783,19 +801,19 @@
                                     } else {
                                         console.warn("Permission lost for active file handle, cannot auto-save to file.");
                                         currentFileHandleForAutoSave = null;
-                                        localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                                        localStorage.removeItem(ACTIVE_FILE_HANDLE_KEY);
                                     }
                                 } catch (e) {
                                     console.warn("Failed to find or re-acquire active file handle (might have been moved/deleted):", e);
                                     currentFileHandleForAutoSave = null;
-                                    localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                                    localStorage.removeItem(ACTIVE_FILE_HANDLE_KEY);
                                 }
                             } else {
                                 console.warn("Permission lost for folder handle, user needs to re-select.");
                                 characterFolderHandle = null;
                                 currentFileHandleForAutoSave = null;
                                 localStorage.removeItem(FOLDER_HANDLE_NAME_KEY);
-                                localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                                localStorage.removeItem(ACTIVE_FILE_HANDLE_KEY);
                             }
                         }
                     } catch (e) {
@@ -803,7 +821,7 @@
                         characterFolderHandle = null;
                         currentFileHandleForAutoSave = null;
                         localStorage.removeItem(FOLDER_HANDLE_NAME_KEY);
-                        localStorage.removeItem(ACTIVE_FILE_HANDLE_NAME_KEY);
+                        localStorage.removeItem(ACTIVE_FILE_HANDLE_KEY);
                     }
                 }
 
@@ -831,7 +849,7 @@
                         balance: { current: 1, max: 1, absorb: 'd4', bonus: 0, note: '1 + Рост Разума + Рост Духа' },
                     },
                     heroism: { current: 10, baseMax: 10, bonusMax: 0 },
-                    traits: Array(4).fill(null).map(() => ({ name: '', tag: '', heroism: '', description: '' })),
+                    traits: Array(4).fill(null).map(() => ({ name: '', tag: '', heroism: '', cost: 0, description: '' })), // Default traits with cost
                     equipment: Array(4).fill(null).map(() => ({ name: '', damage: '', description: '' })),
                     notes: '',
                 };
@@ -848,6 +866,10 @@
                             if (Array.isArray(loadedData[key])) {
                                 if (key === 'modules' || key === 'traits' || key === 'equipment') {
                                     merged[key] = loadedData[key].map(item => {
+                                        // Ensure new 'cost' field is added if missing in old loaded data
+                                        if (key === 'traits' && item.cost === undefined) {
+                                            return { ...item, cost: 0 };
+                                        }
                                         return { ...item };
                                     });
                                     if (loadedData[key].length < defaultData[key].length) {
@@ -907,8 +929,6 @@
                     characterData.notes = value;
                 } else if (id === 'expCurrent') {
                     characterData.experience.current = value;
-                } else if (id === 'expUnspent') {
-                    characterData.experience.unspent = value;
                 } else if (id === 'heroismCurrent') {
                     characterData.heroism.current = value;
                 } else if (id === 'heroismBonus') {
@@ -916,7 +936,6 @@
                 } else if (target.closest('#characteristics-section')) { // Handle characteristic growth inputs
                      const charKey = target.dataset.char;
                      if (characterData.characteristics.hasOwnProperty(charKey)) {
-                        // For inputs directly controlling growth, update characterData and recalculate dice
                         characterData.characteristics[charKey].growth = value;
                         characterData.characteristics[charKey].dice = getDiceFromGrowth(value);
                      }
@@ -927,15 +946,12 @@
                 // Update only the *display* elements (read-only or calculated)
                 updateStatsDisplayValues(); // This updates all derived stat displays and heroism
                 autoSaveCharacter();
-                // IMPORTANT: Do NOT call updateUI() or renderX() here for general input changes.
-                // This prevents inputs from losing focus.
             }
 
             // Attach listeners to all inputs. This is called once on DOMContentLoaded
             // and also by renderX functions for dynamically created inputs.
             function attachInputListeners(parentElement = document) {
                 parentElement.querySelectorAll('input:not([readonly]), textarea, select').forEach(input => {
-                    // Remove existing listener to prevent duplicates, especially important for dynamic elements
                     input.removeEventListener('input', handleInputChange);
                     input.addEventListener('input', handleInputChange);
                 });
@@ -974,7 +990,7 @@
             }
 
             function addTrait() {
-                characterData.traits.push({ name: '', tag: '', heroism: '', description: '' });
+                characterData.traits.push({ name: '', tag: '', heroism: '', cost: 0, description: '' }); // Added default cost
                 autoSaveCharacter();
                 renderTraits(); // Only re-render traits section
             }
@@ -1008,7 +1024,9 @@
                         characterData.equipment.splice(index, 1);
                         renderEquipment(); // Re-render only equipment
                     }
+                    calculateStats(); // Recalculate stats after deletion (important for unspent exp)
                     autoSaveCharacter();
+                    updateStatsDisplayValues(); // Update derived values in UI
                     deleteTarget = null;
                 }
                 confirmationModal.style.display = 'none';
@@ -1086,7 +1104,7 @@
                                 await writable.write(JSON.stringify(characterData, null, 2));
                                 await writable.close();
                                 currentFileHandleForAutoSave = fileHandle;
-                                localStorage.setItem(ACTIVE_FILE_HANDLE_NAME_KEY, fileHandle.name);
+                                localStorage.setItem(ACTIVE_FILE_HANDLE_KEY, fileHandle.name);
                                 alert(`Персонаж "${characterData.name || 'Без имени'}" сохранен в папку "${characterFolderHandle.name}"!`);
                             } else {
                                 alert('Доступ к выбранной папке отклонен. Не удалось сохранить персонажа.');
@@ -1130,7 +1148,7 @@
             document.getElementById('name').addEventListener('input', handleInputChange);
             document.getElementById('description').addEventListener('input', handleInputChange);
             document.getElementById('expCurrent').addEventListener('input', handleInputChange);
-            document.getElementById('expUnspent').addEventListener('input', handleInputChange);
+            // document.getElementById('expUnspent').addEventListener('input', handleInputChange); // This is now readonly and calculated
             document.getElementById('notes').addEventListener('input', handleInputChange);
             document.getElementById('heroismCurrent').addEventListener('input', handleInputChange);
             document.getElementById('heroismBonus').addEventListener('input', handleInputChange);
